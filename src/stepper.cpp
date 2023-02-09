@@ -47,6 +47,8 @@ void Stepper::initialize() {
 }
 
 void Stepper::start_move(float speed, float accel) {
+    if (master->delta == 0) return;
+
     float start_speed = master->min_speed;
 
     if (master->max_accel < accel) accel = master->max_accel;
@@ -94,7 +96,7 @@ void Stepper::set_target_rel(int32_t rel_pos) {
         target_position = (target_position > max_travel) ? max_travel : min_travel;
     }
 
-    set_direction((rel_pos > 0) ? 1 : -1);
+    set_direction((rel_pos >= 0) ? 1 : -1);
 
     std::sort(steppers_sorted, steppers_sorted + stepper_count, cmp_delta);
     master = steppers_sorted[0];
@@ -160,18 +162,15 @@ void Stepper::probe() {
         SerialCommunication::post_message(ERROR, "Probing not enabled on axis %d", axis);
         return;
     }
-
 }
 
 void Stepper::zero() {
     current_position = 0;
 }
 
-
 float Stepper::map_speed(float speed) {
-    return (float) (speed * delta) / master->delta;
+    return (master->delta > 0) ? (speed * delta) / master->delta : 0;
 }
-
 
 void Stepper::step_ISR() {
 
@@ -188,6 +187,7 @@ void Stepper::step_ISR() {
                 step_timer.stop();
                 Accelerator::current_speed = 0;
                 SerialCommunication::queue_message(INFO, "Probe completed on axis %d", master->axis);
+                SerialCommunication::queue_realtime_status();
                 break;
             }
             goto case_ACTIVE;
@@ -214,10 +214,10 @@ void Stepper::step_ISR() {
                 step_timer.stop();
                 Accelerator::current_speed = 0;
                 SerialCommunication::queue_message(INFO, "Move complete");
+                SerialCommunication::queue_realtime_status();
 
             } else {
                 step_timer.setPeriod(Accelerator::compute_next_step_period());
-
             }
 
             pulse_timer.trigger(PULSE_WIDTH_MICROS);

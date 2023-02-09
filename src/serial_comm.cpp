@@ -150,6 +150,9 @@ namespace SerialCommunication {
                 
                 break;
             }
+            case RESET:
+                SCB_AIRCR = 0x05FA0004;
+                break;
 
             default:
                 break;
@@ -174,6 +177,7 @@ namespace SerialCommunication {
         else IS_CMD("ZRO", SET_ZERO, 1)
         else IS_CMD("STP", STOP, 0)
         else IS_CMD("HLT", HALT, 0)
+        else IS_CMD("RST", RESET, 0)
         else {
             post_message(ERROR, "Unknown command: <%s>", cmd);
             return;
@@ -254,7 +258,8 @@ namespace SerialCommunication {
         }
     }
 
-    void _report_realtime_status() {
+
+    void _report_realtime_status(bool queue) {
         static const char* const STEPPER_STATE_STRINGS[] = {STEPPER_STATES(MAKE_STRINGS)};
 
         char status_message[256];
@@ -262,10 +267,11 @@ namespace SerialCommunication {
 
         sprintf(status_message, "(%s)", STEPPER_STATE_STRINGS[Stepper::state]);
         for (uint8_t n = 0; n < Stepper::stepper_count; n++) {
-            sprintf(status_message + strlen(status_message), " AX%i:<%f, %f>", n, Stepper::steppers[n]->current_position * MM_PER_STEP[n], Stepper::steppers[n]->map_speed(speed) * MM_PER_STEP[n]);
+            sprintf(status_message + strlen(status_message), " AX%i:<%f,%f>", n, Stepper::steppers[n]->current_position * MM_PER_STEP[n], Stepper::steppers[n]->map_speed(speed) * MM_PER_STEP[n]);
         }
 
-        post_message(STATUS, status_message);
+        if (!queue) post_message(STATUS, status_message);
+        else queue_message(STATUS, status_message);
     }
 
     void report_realtime_status() {
@@ -276,8 +282,12 @@ namespace SerialCommunication {
                         ||  Stepper::state == HOMING) ? REPORT_MILLIS_ACTIVE : REPORT_MILLIS_IDLE;
         
         if (millis() - last_report >= period) {
-            _report_realtime_status();
+            _report_realtime_status(false);
             last_report = millis();
         }
+    }
+
+    void queue_realtime_status() {
+        _report_realtime_status(true);
     }
 }

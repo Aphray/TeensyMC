@@ -8,16 +8,10 @@ inline float interpf(float x0, float y0, float x1, float y1, float x) {
 }
 
 #ifdef S_CURVE_ACCELERATION
-    
-    const float TWO_PI_SQR = 2 * TWO_PI;
-    const int MAX = sizeof(SPEED) / sizeof(float);
+    #include "s_curve_speed_map.h"
 
-    float interp_period(float x) {
-        float d = MAX * x;
-        uint16_t i = (uint32_t) d;
-        return (i >= (MAX-1)) ? PERIODS[MAX-1] : PERIODS[i] + (d - i) * (PERIODS[i+1] - PERIODS[i]);
-    }
-
+    const uint32_t NUM_POINTS = sizeof(SPEED_MAP) / sizeof(float);
+    const float TWO_PI_F = (float) TWO_PI;
 #endif
 
 namespace Accelerator {
@@ -30,6 +24,21 @@ namespace Accelerator {
     float target_speed;
     float initial_speed;
     float current_speed;
+
+    #ifdef S_CURVE_ACCELERATION
+    inline float compute_scurve(uint32_t step) {
+        float x = ((float) step) / accel_stop * (NUM_POINTS - 1);
+        int x0 = (int) x;
+        
+        float speed;
+        if ((x0 + 1) >= NUM_POINTS) {
+            speed = SPEED_MAP[NUM_POINTS - 1];
+        } else {
+            speed = interpf(x0, SPEED_MAP[x0], x0 + 1, SPEED_MAP[x0 + 1], x);
+        }
+        return initial_speed + (target_speed - initial_speed) * speed / TWO_PI_F;
+    }
+    #endif
 
     void prepare(uint32_t steps, float initial_speed_, float target_speed_, float accel) {
         current_step = 0;
@@ -46,7 +55,6 @@ namespace Accelerator {
             accel_stop = total_steps / 2;
             decel_start = total_steps - accel_stop;
             target_speed = sqrtf(initial_speed * initial_speed + (accel + accel) * accel_stop);
-        
         }
     }
 
@@ -56,22 +64,21 @@ namespace Accelerator {
         if (current_step < accel_stop) {
             // acceleration period
             #ifdef S_CURVE_ACCELERATION
-
+            current_speed = compute_scurve(current_step);
             #else
             current_speed = interpf(0, initial_speed, accel_stop, target_speed, current_step);
             #endif
             
-
         } else if (current_step < decel_start) {
             // constant "cruise" period
             current_speed = target_speed;
 
-        } else if (current_step <= total_steps) {
+        } else if (current_step < total_steps) {
             // deceleration period
             #ifdef S_CURVE_ACCELERATION
-
+            current_speed = compute_scurve(total_steps - current_step - 1);
             #else
-            current_speed = interpf(0, initial_speed, accel_stop, target_speed, total_steps - current_step);
+            current_speed = interpf(0, initial_speed, accel_stop, target_speed, total_steps - current_step - 1);
             #endif
 
         } else {

@@ -25,7 +25,8 @@ enum Command {
     CLEAR_FAULT,
     SET_ZERO,
     STOP,
-    HALT
+    HALT,
+    RESET
 };
 
 struct Message {
@@ -53,6 +54,8 @@ namespace SerialCommunication {
     void post_queued_messages();
 
     void report_realtime_status();
+
+    void queue_realtime_status();
 
     template<typename... Args>
     void post_message(MessageLevel level, char* format, Args... args) {

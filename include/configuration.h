@@ -5,7 +5,7 @@
 #define ECHO_CMDS
 
 // switch to S-curve acceleration (from linear acceleration)
-// #define S_CURVE_ACCELERATION
+#define S_CURVE_ACCELERATION
 
 // delay periods for status reporting
 const uint16_t REPORT_MILLIS_IDLE = 500;
@@ -26,16 +26,16 @@ const float MM_PER_STEP[] = {
 
 // travel limits (in mm)
 const float TRAVEL_LIMITS[][2] = {
-    {-200, 200},    
-    {-200, 200},     
-    {-200, 200}
+    {0, 200},    
+    {0, 200},     
+    {0, 200}
 };
 
 // speed limits (in mm/sec)
 const float SPEED_LIMITS[][2] = {
-    {0, 50},
-    {0, 50},
-    {0, 50}
+    {0.01, 50},
+    {0.01, 50},
+    {0.01, 50}
 };
 
 // default and maximum acceleration (in mm/s/s)
