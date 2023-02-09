@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
-#include "stepper.h"
+#include "../stepper.h"
 
 namespace Accelerator {
 

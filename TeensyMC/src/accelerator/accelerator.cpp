@@ -1,6 +1,6 @@
 #include "accelerator.h"
-#include "serial_comm.h"
-#include "configuration.h"
+#include "../serial_comm.h"
+#include "../configuration.h"
 
 
 inline float interpf(float x0, float y0, float x1, float y1, float x) {
@@ -8,9 +8,9 @@ inline float interpf(float x0, float y0, float x1, float y1, float x) {
 }
 
 #ifdef S_CURVE_ACCELERATION
-    #include "s_curve_speed_map.h"
+    #include "sin_speed_table.h"
 
-    const uint32_t NUM_POINTS = sizeof(SPEED_MAP) / sizeof(float);
+    const uint32_t NUM_POINTS = sizeof(SIN_SPEED_TABLE) / sizeof(float);
     const float TWO_PI_F = (float) TWO_PI;
 #endif
 
@@ -32,9 +32,9 @@ namespace Accelerator {
         
         float speed;
         if ((x0 + 1) >= NUM_POINTS) {
-            speed = SPEED_MAP[NUM_POINTS - 1];
+            speed = SIN_SPEED_TABLE[NUM_POINTS - 1];
         } else {
-            speed = interpf(x0, SPEED_MAP[x0], x0 + 1, SPEED_MAP[x0 + 1], x);
+            speed = interpf(x0, SIN_SPEED_TABLE[x0], x0 + 1, SIN_SPEED_TABLE[x0 + 1], x);
         }
         return initial_speed + (target_speed - initial_speed) * speed / TWO_PI_F;
     }

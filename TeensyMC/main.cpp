@@ -1,4 +1,4 @@
-#include "../TeensyMC.h"
+#include "TeensyMC.h"
 
 Stepper* steppers[NUM_STEPPERS];
 

@@ -1,6 +1,6 @@
 #include "stepper.h"
 #include "serial_comm.h"
-#include "accelerator.h"
+#include "accelerator/accelerator.h"
 
 OneShotTimer Stepper::pulse_timer;
 PeriodicTimer Stepper::step_timer;
