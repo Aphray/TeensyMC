@@ -63,8 +63,9 @@ ERROR     (Non-critical errors)
 WARNING   (Warnings)
 CRITICAL  (Critical errors)
 ```
-An example of an error message for incorrect numbers arguments on a move (MVE) command:
+An example of an error message for incorrect number of arguments on a move (MVE) command:
 ```
+>MVE:R10
 [ERROR] Not enough args
 ```
 And an example of a warning message for travel out of bounds/limits:
