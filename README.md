@@ -71,7 +71,7 @@ An example of an error message for incorrect number of arguments on a move (MVE)
 And an example of a warning message for travel out of bounds/limits:
 ```
 >MVE:R-20,*,*,10,200    (axis 0 lower bound set to 0; attempting to move out of bounds...)
-[WARNING] Target of bounds on axis 0, limiting travel within bounds
+[WARNING] Target out of bounds on axis 0, limiting travel within bounds
 ```
 ## Behind The Scenes
 
