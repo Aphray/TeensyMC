@@ -1,8 +1,4 @@
-#include <Arduino.h>
-#include "stepper.h"
-#include "accelerator.h"
-#include "serial_comm.h"
-#include "configuration.h"
+#include "../TeensyMC.h"
 
 Stepper* steppers[NUM_STEPPERS];
 
