@@ -215,7 +215,6 @@ namespace SerialCommunication {
     void read_serial() {
         static uint8_t idx = 0;
         static char rx_buffer[256];
-        static uint8_t blocks = 1;
 
         while (Serial.available() > 0) {
             char c = Serial.read();
@@ -226,7 +225,6 @@ namespace SerialCommunication {
 
                 case '\n':
                     rx_buffer[idx] = 0;
-
                     if (rx_buffer[0] == 0) continue;
 
                     #ifdef ECHO_CMDS
@@ -236,12 +234,8 @@ namespace SerialCommunication {
                     parse_serial(rx_buffer);
                     rx_buffer[0] = 0;
                     idx = 0;
-                    blocks = 1;
-
                     break;
 
-                case ' ':
-                    blocks++;
                 default:
                     rx_buffer[idx++] = c;
             }
@@ -250,8 +244,7 @@ namespace SerialCommunication {
 
     void post_queued_messages() {
         while (message_queue.size() > 0) {
-            Message message = message_queue.front();
-            message.post();
+            message_queue.front().post();
             message_queue.pop();
         }
     }

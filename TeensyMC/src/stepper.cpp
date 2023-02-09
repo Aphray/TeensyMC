@@ -92,7 +92,7 @@ void Stepper::set_target_rel(int32_t rel_pos) {
     delta = abs(rel_pos);
     target_position = current_position + rel_pos;
     if (target_position > max_travel || target_position < min_travel) {
-        SerialCommunication::post_message(WARNING, "Target of bounds on axis %d, limiting travel within bounds", axis);
+        SerialCommunication::post_message(WARNING, "Target out of bounds on axis %d, limiting travel within bounds", axis);
         target_position = (target_position > max_travel) ? max_travel : min_travel;
     }
 
