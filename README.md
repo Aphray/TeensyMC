@@ -69,13 +69,14 @@ An example of an error message for incorrect numbers arguments on a move (MVE) c
 ```
 And an example of a warning message for travel out of bounds/limits:
 ```
+>MVE:R-20,*,*,10,200    (axis 0 lower bound set to 0; attempting to move out of bounds...)
 [WARNING] Target of bounds on axis 0, limiting travel within bounds
 ```
 ## Behind The Scenes
 
 ### Coordination
 
-The Bresenham Line Algorithm is used to coordinate simultaneous movement among multiple axis. The algorithm use here was adopted from the [TeensyStep](https://github.com/luni64/TeensyStep) library
+The Bresenham Line Algorithm is used to coordinate simultaneous movement among multiple axis. The algorithm used here was adopted from the [TeensyStep](https://github.com/luni64/TeensyStep) library.
 
 ### Acceleration
 
