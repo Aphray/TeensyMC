@@ -10,7 +10,7 @@
 #define ARG_BUF_SIZE 12
 #define MAX_ARGS (NUM_STEPPERS + 2)
 
-#define CMD_DELIM " "
+#define CMD_DELIM ":"
 #define ARG_DELIM ','
 #define SKIP_CHAR '*'
 
@@ -206,8 +206,6 @@ namespace SerialCommunication {
         run_cmd(command, arg_list);
     }
 
-
-
     void echo(const char* message) {
         char buffer[strlen(message) + 10];
         sprintf(buffer, "echo: <%s>", message);
@@ -267,7 +265,7 @@ namespace SerialCommunication {
 
         sprintf(status_message, "(%s)", STEPPER_STATE_STRINGS[Stepper::state]);
         for (uint8_t n = 0; n < Stepper::stepper_count; n++) {
-            sprintf(status_message + strlen(status_message), " AX%i:<%f,%f>", n, Stepper::steppers[n]->current_position * MM_PER_STEP[n], Stepper::steppers[n]->map_speed(speed) * MM_PER_STEP[n]);
+            sprintf(status_message + strlen(status_message), " AX%i:%f,%f", n, Stepper::steppers[n]->current_position * MM_PER_STEP[n], Stepper::steppers[n]->map_speed(speed) * MM_PER_STEP[n]);
         }
 
         if (!queue) post_message(STATUS, status_message);
