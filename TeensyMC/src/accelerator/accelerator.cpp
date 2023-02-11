@@ -1,6 +1,4 @@
 #include "accelerator.h"
-#include "../serial_comm.h"
-#include "../configuration.h"
 
 
 inline float interpf(float x0, float y0, float x1, float y1, float x) {

@@ -1,13 +1,14 @@
 #include "message_agent.h"
 
 
-MessageAgent::MessageAgent(Stream* stream_) {
+_message_agent::_message_agent(Stream* stream_) {
     stream = stream_;
 }
 
-void MessageAgent::post_queued_messages() {
+void _message_agent::post_queued_messages() {
     while (message_queue.size() > 0) {
-            Message message = message_queue.front();
+            _message message = message_queue.front();
             stream->println(message.buffer);
+            message_queue.pop();
         }
 }

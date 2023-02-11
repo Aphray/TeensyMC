@@ -2,7 +2,7 @@
 
 #include <queue>
 #include "Stream.h"
-#include "../enum_factory.h"
+#include "enum_factory.h"
 
 #ifndef MESSAGE_BUFFER_SIZE
     #define MESSAGE_BUFFER_SIZE 256
@@ -22,11 +22,11 @@ enum MessageLevel {
 };
 
 
-struct Message {
+struct _message {
     char buffer[MESSAGE_BUFFER_SIZE];
 
     template<typename... Args>
-    Message(MessageLevel level, char* format, Args... args) {
+    _message(MessageLevel level, char* format, Args... args) {
         static const char* const MESSAGE_LEVEL_STRINGS[] = { MESSAGE_LEVELS(MAKE_STRINGS) };
 
         sprintf(buffer, "[%s] ", MESSAGE_LEVEL_STRINGS[level]);
@@ -35,21 +35,21 @@ struct Message {
 };
 
 
-class MessageAgent {
+class _message_agent {
 
     public:
 
-        MessageAgent(Stream* stream);
+        _message_agent(Stream* stream);
 
         template<typename... Args>
         void post_message(MessageLevel level, char* format, Args... args) {
-            Message message(level, format, args...);
+            _message message(level, format, args...);
             stream->println(message.buffer);
         }
 
         template<typename... Args>
         void queue_message(MessageLevel level, char* format, Args... args) {
-            Message message(level, format, args...);
+            _message message(level, format, args...);
             message_queue.push(message);
         }
 
@@ -59,5 +59,8 @@ class MessageAgent {
 
         Stream* stream;
 
-        std::queue<Message> message_queue;
+        std::queue<_message> message_queue;
 };
+
+
+extern _message_agent MessageAgent;
