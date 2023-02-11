@@ -5,8 +5,9 @@
     #define SERIAL_STREAM Serial
 #endif
 
-_message_agent MessageAgent(&SERIAL_STREAM);
-_serial_command SerialCommand(&SERIAL_STREAM);
+
+_message_agent TMCMessageAgent(&SERIAL_STREAM);
+_serial_command TMCSerialCommand(&SERIAL_STREAM);
 
 
 void post_realtime_status() {
@@ -18,8 +19,8 @@ void TMCSetup() {
 }
 
 void TMCRun() {
-    SerialCommand.poll();
-    MessageAgent.post_queued_messages();
+    TMCSerialCommand.poll();
+    TMCMessageAgent.post_queued_messages();
     post_realtime_status();
 }
 
