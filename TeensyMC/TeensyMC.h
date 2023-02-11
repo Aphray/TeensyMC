@@ -1,6 +1,9 @@
 #pragma once
 
-#include "src/communication/message_agent.h"
+#include <Arduino.h>
 #include "src/communication/serial_command.h"
+#include "src/communication/message_agent.h"
 
-void run_TMC();
+void TMCSetup();
+
+void TMCRun();

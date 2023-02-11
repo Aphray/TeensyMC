@@ -63,4 +63,4 @@ class _message_agent {
 };
 
 
-extern _message_agent MessageAgent;
+extern _message_agent TMCMessageAgent;

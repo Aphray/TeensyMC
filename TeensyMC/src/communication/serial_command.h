@@ -16,6 +16,10 @@
     #define MAX_USER_COMMANDS 20
 #endif
 
+#ifndef MAX_USER_CALLBACKS
+    #define MAX_USER_CALLBACKS 5
+#endif
+
 #ifndef CMD_MAX_ARGS
     #define CMD_MAX_ARGS 10
 #endif
@@ -49,10 +53,12 @@ class ArgList {
 typedef void (*CommandCallback)(char*, ArgList*);
 
 
-struct _command {
-    char cmd[CMD_CHAR_MAX + 1];
+struct _user_command {
     uint8_t num_args;
-    CommandCallback callback;
+    uint8_t num_cbs;
+    char cmd[CMD_CHAR_MAX + 1];
+
+    CommandCallback callbacks[MAX_USER_CALLBACKS];
 };
 
 
@@ -65,13 +71,16 @@ class _serial_command {
         void poll();
 
         // add a user-defined command and callback that can be executed via serial commands
-        void add_command(char* cmd, uint8_t num_args, CommandCallback callback);
+        void new_command(char* cmd, uint8_t num_args);
+
+        // attach callback to the specified command
+        void add_callback(char* cmd, CommandCallback callback);
 
     private:
         Stream* stream;
 
-        uint8_t command_idx;
-        _command commands[MAX_USER_COMMANDS];
+        uint8_t num_cmds;
+        _user_command commands[MAX_USER_COMMANDS];
 
         char rx_buffer[RX_BUFFER_SIZE];
 
@@ -79,4 +88,4 @@ class _serial_command {
         void parse(char* data);
 };
 
-extern _serial_command SerialCommand;
+extern _serial_command TMCSerialCommand;

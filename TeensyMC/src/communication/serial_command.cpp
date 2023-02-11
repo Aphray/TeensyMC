@@ -15,7 +15,6 @@
     #define ARG_SKIP_CHAR '*'
 #endif
 
-
 ArgList::ArgList(char* args_) {
     count = 0;
     arg_idx = 0;
@@ -55,11 +54,10 @@ void ArgList::reset() {
     arg_idx = 0;
 }
 
-
 _serial_command::_serial_command(Stream* stream_) {
+    num_cmds = 0;
     stream = stream_;
 }
-
 
 void _serial_command::poll() {
     static char* rx_ptr = &rx_buffer[0];
@@ -88,22 +86,37 @@ void _serial_command::poll() {
 }
 
 
-void _serial_command::add_command(char* cmd, uint8_t num_args, CommandCallback callback) {
+void _serial_command::new_command(char* cmd, uint8_t num_args) {
     // checks
-    if (strlen(cmd) > CMD_CHAR_MAX) return;
-    if (command_idx == MAX_USER_COMMANDS) return;
+    if (strlen(cmd) > CMD_CHAR_MAX) { return; }
+    if (num_cmds == MAX_USER_COMMANDS) { return; }
 
-    // check to see if the command is already registered
-    for (uint8_t n = 0; n < command_idx; n ++) {
+    // check to see if the command exists
+    for (uint8_t n = 0; n < num_cmds; n ++) {
         // do nothing if the command already exists
-        if (STR_CMP(cmd, commands[n].cmd)) return;
+        if (STR_CMP(cmd, commands[n].cmd)) { return; }
     }
 
     // build the command if it doesn't already exist
-    _command* command = &commands[command_idx++];
+    _user_command* command = &commands[num_cmds++];
     command->num_args = num_args;
-    command->callback = callback;
     strcpy(command->cmd, cmd);
+}
+
+
+void _serial_command::add_callback(char* cmd, CommandCallback callback) {
+    // check to see if the command is exists
+    for (uint8_t n = 0; n < num_cmds; n ++) {
+        _user_command* command = &commands[n];
+
+        if (STR_CMP(cmd, command->cmd)) {
+            if (command->num_cbs == MAX_USER_CALLBACKS) { return; }
+
+            // add the new callback to the callbacks list
+            command->callbacks[command->num_cbs++] = callback;
+            return;
+        }
+    }
 }
 
 
@@ -113,22 +126,29 @@ void _serial_command::parse(char* data) {
     ArgList arg_list(strtok(NULL, CMD_DELIMITER));
 
     // loop through all the stored commands
-    for (uint8_t n = 0; n < command_idx; n++) {
-        _command* command = &commands[n];
+    for (uint8_t n = 0; n < num_cmds; n++) {
+        _user_command* command = &commands[n];
+
         // check if the parsed command matches the stored command
         if (STR_CMP(cmd, command->cmd)) {
+
             // check if the argument count matches
             if (arg_list.count == command->num_args) {
-                // execute the callback and pass the arguments
-                (*command->callback)(cmd, &arg_list);
+
+                // execute the callbacks and pass the arguments
+                for (uint8_t i = 0; i < command->num_cbs; i ++) {
+                    (*command->callbacks[i])(cmd, &arg_list);
+                    arg_list.reset();
+                }
+                
             } else {
                 // post error about argument mismatch
-                MessageAgent.post_message(ERROR, "Command <%s> requires (exactly) %i arg%s, but given %i", 
+                TMCMessageAgent.post_message(ERROR, "Command <%s> requires (exactly) %i arg%s, but given %i", 
                         cmd, command->num_args, (command->num_args > 1) ? "s" : "", arg_list.count);
             }
             return;
         }
     }
     // command wasn't found...
-    MessageAgent.post_message(ERROR, "Command <%s> is unrecognized", cmd);
+    TMCMessageAgent.post_message(ERROR, "Command <%s> is unrecognized", cmd);
 }
