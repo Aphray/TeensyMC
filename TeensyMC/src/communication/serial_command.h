@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 #include <Stream.h>
-#include "../config.h"
+#include "../default_config.h"
 
 
 class ArgList {

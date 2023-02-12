@@ -1,7 +1,6 @@
 #pragma once
 
 
-// #include "src/config.h"
 #include "src/stepper_control/stepper.h"
 #include "src/communication/serial_command.h"
 #include "src/communication/message_agent.h"

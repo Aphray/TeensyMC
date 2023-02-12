@@ -3,7 +3,7 @@
 #include <TeensyTimerTool.h>
 
 #include "stepper.h"
-#include "../config.h"
+#include "../default_config.h"
 #include "accelerators/accelerator.h"
 #include "../communication/enum_factory.h"
 
