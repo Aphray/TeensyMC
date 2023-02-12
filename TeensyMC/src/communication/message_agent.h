@@ -3,10 +3,7 @@
 #include <queue>
 #include "Stream.h"
 #include "enum_factory.h"
-
-#ifndef MESSAGE_BUFFER_SIZE
-    #define MESSAGE_BUFFER_SIZE 256
-#endif
+#include "../config.h"
 
 #define MESSAGE_LEVELS(X)   \
     X(STATUS)               \
@@ -38,7 +35,6 @@ struct _message {
 class _message_agent {
 
     public:
-
         _message_agent(Stream* stream);
 
         template<typename... Args>

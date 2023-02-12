@@ -3,17 +3,7 @@
 
 #define STR_CMP(a, b) (strcmp(a, b) == 0)
 
-#ifndef CMD_DELIMITER
-    #define CMD_DELIMITER ":"
-#endif
 
-#ifndef ARG_DELIMITER_CHAR
-    #define ARG_DELIMITER_CHAR ','
-#endif
-
-#ifndef ARG_SKIP_CHAR
-    #define ARG_SKIP_CHAR '*'
-#endif
 
 ArgList::ArgList(char* args_) {
     count = 0;

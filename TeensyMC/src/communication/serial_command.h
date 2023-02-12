@@ -2,31 +2,7 @@
 
 #include <Arduino.h>
 #include <Stream.h>
-
-
-#ifndef RX_BUFFER_SIZE
-    #define RX_BUFFER_SIZE 256
-#endif
-
-#ifndef CMD_CHAR_MAX
-    #define CMD_CHAR_MAX 5
-#endif
-
-#ifndef MAX_USER_COMMANDS
-    #define MAX_USER_COMMANDS 20
-#endif
-
-#ifndef MAX_USER_CALLBACKS
-    #define MAX_USER_CALLBACKS 5
-#endif
-
-#ifndef CMD_MAX_ARGS
-    #define CMD_MAX_ARGS 10
-#endif
-
-#ifndef ARG_BUFFER_SIZE
-    #define ARG_BUFFER_SIZE 12
-#endif
+#include "../config.h"
 
 
 class ArgList {

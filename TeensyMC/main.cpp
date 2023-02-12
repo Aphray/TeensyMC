@@ -1,15 +1,16 @@
-#define STEPPERS 3
-#include "TeensyMC.h"
+#include <Arduino.h>
+
 
 
 void setup() {
-    TMCSetup();
+    // TMCSetup();
+    // TMCStepperControl.add_stepper(&xstepper, 0);
 }
 
 
 void loop() {
     // run TeensyMC
-    TMCRun();
+    // TMCRun();
 
     // do other __NON-BLOCKING__ stuff here...
 }
