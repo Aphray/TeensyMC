@@ -3,8 +3,8 @@
 #include <TeensyTimerTool.h>
 
 #include "stepper.h"
-#include "../default_config.h"
-#include "accelerators/accelerator.h"
+#include "../TMC_default_config.h"
+#include "accelerator/accelerator.h"
 #include "../communication/enum_factory.h"
 
 #define STEPPER_STATES(X)   \
@@ -47,6 +47,8 @@ class _stepper_control {
         Stepper* in_fault;
         Stepper* steppers[STEPPERS + 1];
         Stepper* steppers_sort[STEPPERS + 1];
+
+        _accelerator accelerator;
 
         OneShotTimer pulse_timer;
         PeriodicTimer step_timer;

@@ -1,7 +1,7 @@
 #pragma once
 
-#if __has_include("user_config.h")
-    #include "user_config.h"
+#if __has_include("TMC_user_config.h")
+    #include "TMC_user_config.h"
 #endif
 
 
@@ -67,6 +67,10 @@
 
 #ifndef HOME_STEPPERS_FIRST
     #define HOME_STEPPERS_FIRST true
+#endif
+
+#ifndef SIN_CURVE_ACCELERATION
+    #define SIN_CURVE_ACCELERATION false
 #endif
 
 #ifndef PULSE_WIDTH_US

@@ -10,7 +10,6 @@
 
 _stepper_control::_stepper_control() {
     state = HOME_STEPPERS_FIRST ? HOME_FIRST : IDLE;
-    Serial.println(STEPPERS);
 }
 
 
@@ -37,7 +36,7 @@ void _stepper_control::post_steppers_status() {
     static const char* const STEPPER_STATE_STRINGS[] = { STEPPER_STATES(MAKE_STRINGS) };
 
     char message[MESSAGE_BUFFER_SIZE];
-    float acc_speed = Accelerator::current_speed;
+    float acc_speed = accelerator.current_speed;
 
     sprintf(message, "(%s)", STEPPER_STATE_STRINGS[state]);
     for (uint8_t n = 0; n < STEPPERS; n++) {
@@ -75,11 +74,11 @@ void _stepper_control::step_ISR() {
             } else if (master->move_complete()) {
                 state = IDLE;
                 step_timer.stop();
-                Accelerator::current_speed = 0;
+                accelerator.current_speed = 0;
                 TMCMessageAgent.queue_message(INFO, "Move complete");
 
             } else {
-                step_timer.setPeriod(Accelerator::compute_next_step_period());
+                step_timer.setPeriod(accelerator.compute_next_step_period());
             }
 
             pulse_timer.trigger(PULSE_WIDTH_US);
