@@ -30,7 +30,7 @@
 #endif
 
 #ifndef ARG_BUFFER_SIZE
-    #define ARG_BUFFER_SIZE 12
+    #define ARG_BUFFER_SIZE 16
 #endif
 
 #ifndef CMD_CHAR_MAX
@@ -38,11 +38,11 @@
 #endif
 
 #ifndef MAX_USER_COMMANDS
-    #define MAX_USER_COMMANDS 20
+    #define MAX_USER_COMMANDS 25
 #endif
 
 #ifndef MAX_USER_CALLBACKS
-    #define MAX_USER_CALLBACKS 5
+    #define MAX_USER_CALLBACKS 10
 #endif
 
 #ifndef CMD_MAX_ARGS
@@ -61,8 +61,8 @@
     #define ARG_SKIP_CHAR '*'
 #endif
 
-#ifndef STEPPERS
-    #define STEPPERS 3
+#ifndef MAX_STEPPERS
+    #define MAX_STEPPERS 6
 #endif
 
 #ifndef HOME_STEPPERS_FIRST

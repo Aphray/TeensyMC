@@ -19,6 +19,7 @@ class ArgList {
     
     private:
         uint8_t arg_idx;
+
         char args[CMD_MAX_ARGS][ARG_BUFFER_SIZE];
 
         // split the args c-string into 
@@ -47,7 +48,7 @@ class _serial_command {
         void poll();
 
         // add a user-defined command and callback that can be executed via serial commands
-        void new_command(char* cmd, uint8_t num_args);
+        void register_command(char* cmd, uint8_t num_args);
 
         // attach callback to the specified command
         void add_callback(char* cmd, CommandCallback callback);

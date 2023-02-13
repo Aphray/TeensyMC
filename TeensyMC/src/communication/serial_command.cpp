@@ -50,7 +50,7 @@ _serial_command::_serial_command(Stream* stream_) {
 }
 
 void _serial_command::poll() {
-    static char* rx_ptr = &rx_buffer[0];
+    static char* rx_ptr = rx_buffer;
 
     while (stream->available() > 0) {
         char c = stream->read();
@@ -66,7 +66,7 @@ void _serial_command::poll() {
 
                 // zero the buffer and reset the pointer
                 rx_buffer[0] = 0;
-                rx_ptr = &rx_buffer[0];
+                rx_ptr = rx_buffer;
                 break;
             default:
                 // add character to buffer
@@ -76,7 +76,7 @@ void _serial_command::poll() {
 }
 
 
-void _serial_command::new_command(char* cmd, uint8_t num_args) {
+void _serial_command::register_command(char* cmd, uint8_t num_args) {
     // checks
     if (strlen(cmd) > CMD_CHAR_MAX) { return; }
     if (num_cmds == MAX_USER_COMMANDS) { return; }
@@ -84,7 +84,10 @@ void _serial_command::new_command(char* cmd, uint8_t num_args) {
     // check to see if the command exists
     for (uint8_t n = 0; n < num_cmds; n ++) {
         // do nothing if the command already exists
-        if (STR_CMP(cmd, commands[n].cmd)) { return; }
+        if (STR_CMP(cmd, commands[n].cmd)) { 
+            TMCMessageAgent.post_message(ERROR, "Command <%s> already registered", cmd);
+            return; 
+        }
     }
 
     // build the command if it doesn't already exist
@@ -100,13 +103,19 @@ void _serial_command::add_callback(char* cmd, CommandCallback callback) {
         _user_command* command = &commands[n];
 
         if (STR_CMP(cmd, command->cmd)) {
-            if (command->num_cbs == MAX_USER_CALLBACKS) { return; }
+            if (command->num_cbs == MAX_USER_CALLBACKS) { 
+                TMCMessageAgent.post_message(ERROR, "Command <%s> reached user callback limit (%i)", cmd, MAX_USER_CALLBACKS);
+                return; 
+            }
 
             // add the new callback to the callbacks list
             command->callbacks[command->num_cbs++] = callback;
             return;
         }
     }
+
+    // command wasn't found...
+    TMCMessageAgent.post_message(ERROR, "Command <%s> unrecognized; register command before adding callbacks", cmd);
 }
 
 
@@ -139,6 +148,7 @@ void _serial_command::parse(char* data) {
             return;
         }
     }
+    
     // command wasn't found...
-    TMCMessageAgent.post_message(ERROR, "Command <%s> is unrecognized", cmd);
+    TMCMessageAgent.post_message(ERROR, "Command <%s> unrecognized", cmd);
 }

@@ -15,7 +15,7 @@ void post_realtime_status() {
     uint32_t period = TMCStepperControl.steppers_active() ? ACTIVE_REPORT_MILLIS : IDLE_REPORT_MILLIS;
 
     if ((millis() - last_millis) >= period) {
-        TMCStepperControl.post_steppers_status();
+        TMCStepperControl.post_steppers_status(false);  // 'false' to post directly, no need to queue
         last_millis = millis();
     }
 }
@@ -29,12 +29,12 @@ void TMCSetup() {
     TMCStepperControl.setup_timers();
 
     // add the serial commands
-    TMCSerialCommand.new_command("MVE", STEPPERS + 2);
-    TMCSerialCommand.new_command("PRB", 1);
-    TMCSerialCommand.new_command("HME", 1);
-    TMCSerialCommand.new_command("STP", 0);
-    TMCSerialCommand.new_command("HLT", 0);
-    TMCSerialCommand.new_command("FLT", 0);
+    TMCSerialCommand.register_command("MVE", MAX_STEPPERS + 2);
+    TMCSerialCommand.register_command("PRB", 1);
+    TMCSerialCommand.register_command("HME", 1);
+    TMCSerialCommand.register_command("STP", 0);
+    TMCSerialCommand.register_command("HLT", 0);
+    TMCSerialCommand.register_command("FLT", 0);
 
     // attach callbacks
     TMCSerialCommand.add_callback("MVE", &MVE__cb);
@@ -48,6 +48,6 @@ void TMCSetup() {
 void TMCRun() {
     TMCSerialCommand.poll();
     TMCMessageAgent.post_queued_messages();
-    // post_realtime_status();
+    post_realtime_status();
 }
 

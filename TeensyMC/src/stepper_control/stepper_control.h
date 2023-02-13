@@ -7,6 +7,7 @@
 #include "accelerator/accelerator.h"
 #include "../communication/enum_factory.h"
 
+
 #define STEPPER_STATES(X)   \
     X(IDLE)                 \
     X(ACTIVE)               \
@@ -25,36 +26,52 @@ using namespace TeensyTimerTool;
 class _stepper_control {
 
     public:
-        StepperState state;
-
         _stepper_control();
 
+        // sets up the timers for the step and pulse ISRs
         void setup_timers();
 
+        // sorts the steppers by distance (largest -> smallest)
         void sort_steppers();
         
-        void add_stepper(Stepper* stepper, uint8_t axis);
+        // add a stepper; axis starts from 0 
+        void add_stepper(Stepper* stepper);
 
+        // initiate a move
         void start_move(float speed, float accel);
 
+        // returns whether the steppers are currently runnin
         bool steppers_active();
 
-        void post_steppers_status();
+        // posts the stepper status info to the serial output
+        // if 'queue' is set to true, the message is placed in the message queue and posted from the main loop (for usage inside ISRs)
+        void post_steppers_status(bool queue);
+
+        // returns the speed (in steps/sec) of the accelerator
+        float get_accelerator_speed();
+
+        // returns the master stepper (largest distance to travel)
+        Stepper* get_master_stepper();
 
     private:
+        StepperState state;
 
         Stepper* master;
         Stepper* in_fault;
-        Stepper* steppers[STEPPERS + 1];
-        Stepper* steppers_sort[STEPPERS + 1];
+        Stepper* steppers[MAX_STEPPERS + 1];
+        Stepper* steppers_sort[MAX_STEPPERS + 1];
+
+        uint8_t num_steppers;
 
         _accelerator accelerator;
 
         OneShotTimer pulse_timer;
         PeriodicTimer step_timer;
 
+        // does a single step of the Bresenham algorithm
         void do_bresenham_step() __always_inline;
 
+        // ISRs for the stepping and pulsing
         void step_ISR();
         void pulse_ISR();
 
