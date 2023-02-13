@@ -29,7 +29,7 @@ void TMCSetup() {
     TMCStepperControl.setup_timers();
 
     // add the serial commands
-    TMCSerialCommand.register_command("MVE", MAX_STEPPERS + 2);
+    TMCSerialCommand.register_command("MVE", TMCStepperControl.get_num_steppers() + 2);
     TMCSerialCommand.register_command("PRB", 1);
     TMCSerialCommand.register_command("HME", 1);
     TMCSerialCommand.register_command("STP", 0);

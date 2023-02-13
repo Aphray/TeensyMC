@@ -50,6 +50,9 @@ class _stepper_control {
         // returns the speed (in steps/sec) of the accelerator
         float get_accelerator_speed();
 
+        // returns number of registered steppers
+        uint8_t get_num_steppers();
+
         // returns the master stepper (largest distance to travel)
         Stepper* get_master_stepper();
 

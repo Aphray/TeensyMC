@@ -68,6 +68,10 @@ float _stepper_control::get_accelerator_speed() {
     return accelerator.current_speed;
 }
 
+uint8_t _stepper_control::get_num_steppers() {
+    return num_steppers;
+}
+
 Stepper* _stepper_control::get_master_stepper() {
     return master;
 }
