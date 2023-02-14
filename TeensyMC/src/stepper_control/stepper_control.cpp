@@ -31,7 +31,30 @@ void _stepper_control::add_stepper(Stepper* stepper) {
 }
 
 void _stepper_control::start_move(float speed, float accel) {
-    
+    if (master->delta == 0) return;
+
+    float start_speed = master->min_speed;
+
+    if (master->max_accel < accel) accel = master->max_accel;
+    if (master->max_speed < speed) speed = master->max_speed;
+
+    for (uint8_t n = 1; n < num_steppers; n++) {
+        steppers_sort[n]->delta_rem = 2 * steppers_sort[n]->delta - master->delta;
+        if (steppers_sort[n]->max_accel < accel) accel = steppers_sort[n]->max_accel;
+        if (steppers_sort[n]->min_speed > start_speed) start_speed = steppers_sort[n]->min_speed;
+
+        float norm = steppers_sort[n]->delta / master->delta;
+        if (steppers_sort[n]->max_speed < (norm * speed)) speed = steppers_sorted[n]->max_speed / norm;
+    }
+
+    if (state != HOMING || state != PROBING) {
+        state = ACTIVE;
+        TMCMessageAgent.post_message(INFO, "Move started");
+    }
+
+    accelerator.prepare(master->delta, start_speed, speed, accel);
+    step_timer.setPeriod(1);
+    step_timer.start();
 }
 
 void _stepper_control::setup_timers() {
