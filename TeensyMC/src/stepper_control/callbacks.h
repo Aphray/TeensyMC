@@ -1,5 +1,6 @@
 #pragma once
 
+#include "stepper_control.h"
 #include "../communication/message_agent.h"
 #include "../communication/serial_command.h"
 

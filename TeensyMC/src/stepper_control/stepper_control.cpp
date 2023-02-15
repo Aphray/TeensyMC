@@ -2,6 +2,7 @@
 
 #include "stepper.h"
 #include "stepper_control.h"
+#include "callbacks.h"
 #include "../communication/enum_factory.h"
 #include "../communication/message_agent.h"
 #include "../communication/serial_command.h"
@@ -11,6 +12,29 @@
 _stepper_control::_stepper_control() {
     num_steppers = 0;
     state = HOME_STEPPERS_FIRST ? HOME_FIRST : IDLE;
+}
+
+void _stepper_control::begin() {
+
+    // setup the timers
+    pulse_timer.begin([this]{ this->pulse_ISR(); });
+    step_timer.begin([this]{ this->step_ISR(); }, 1000, false);
+
+    // add the serial commands
+    TMCSerialCommand.register_command("MVE", 2, &num_steppers);
+    TMCSerialCommand.register_command("PRB", 1);
+    TMCSerialCommand.register_command("HME", 1);
+    TMCSerialCommand.register_command("STP", 0);
+    TMCSerialCommand.register_command("HLT", 0);
+    TMCSerialCommand.register_command("FLT", 0);
+
+    // attach callbacks
+    TMCSerialCommand.add_callback("MVE", &MVE__cb);
+    TMCSerialCommand.add_callback("PRB", &PRB__cb);
+    TMCSerialCommand.add_callback("HME", &HME__cb);
+    TMCSerialCommand.add_callback("STP", &STP__cb);
+    TMCSerialCommand.add_callback("HLT", &HLT__cb);
+    TMCSerialCommand.add_callback("FLT", &FLT__cb);
 }
 
 
@@ -50,11 +74,6 @@ void _stepper_control::start_move(float speed, float accel) {
     accelerator.prepare(master->get_delta(), start_speed, speed, accel);
     step_timer.setPeriod(1);
     step_timer.start();
-}
-
-void _stepper_control::setup_timers() {
-    pulse_timer.begin([this]{ this->pulse_ISR(); });
-    step_timer.begin([this]{ this->step_ISR(); }, 1000, false);
 }
 
 bool _stepper_control::steppers_active() {

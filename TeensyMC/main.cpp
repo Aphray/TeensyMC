@@ -20,8 +20,6 @@ void setup() {
     TMCStepperControl.add_stepper(ystepper);
     TMCStepperControl.add_stepper(zstepper);
 
-    TMC_SetupCommands();
-
     // add custom serial commands
     TMCSerialCommand.register_command("FOO", 1);    // (<CMD_NAME>,<REQUIRED_NUMBER_OF_ARGUMENTS>)
     TMCSerialCommand.add_callback("FOO", &foo);     // (<CMD_NAME>,<CALLBACK>)

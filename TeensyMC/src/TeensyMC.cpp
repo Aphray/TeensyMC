@@ -25,28 +25,8 @@ void TMC_Begin() {
     // setup serial channel
     SERIAL_STREAM.begin(SERIAL_BAUDRATE);
 
-    // setup step and pulse timers
-    TMCStepperControl.setup_timers();
-}
-
-void TMC_SetupCommands() {
-
-    // add the serial commands
-    TMCSerialCommand.register_command("MVE", TMCStepperControl.get_num_steppers() + 2);
-    TMCSerialCommand.register_command("MVE", TMCStepperControl.get_num_steppers() + 2);
-    TMCSerialCommand.register_command("PRB", 1);
-    TMCSerialCommand.register_command("HME", 1);
-    TMCSerialCommand.register_command("STP", 0);
-    TMCSerialCommand.register_command("HLT", 0);
-    TMCSerialCommand.register_command("FLT", 0);
-
-    // attach callbacks
-    TMCSerialCommand.add_callback("MVE", &MVE__cb);
-    TMCSerialCommand.add_callback("PRB", &PRB__cb);
-    TMCSerialCommand.add_callback("HME", &HME__cb);
-    TMCSerialCommand.add_callback("STP", &STP__cb);
-    TMCSerialCommand.add_callback("HLT", &HLT__cb);
-    TMCSerialCommand.add_callback("FLT", &FLT__cb);
+    // initialize the stepper control
+    TMCStepperControl.begin();
 }
 
 void TMC_Run() {

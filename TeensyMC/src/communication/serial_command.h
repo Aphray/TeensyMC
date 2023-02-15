@@ -32,8 +32,8 @@ typedef void (*CommandCallback)(char*, ArgList*);
 
 struct _user_command {
     uint8_t num_cbs;
-    uint8_t num_args;
-    uint8_t* num_args_ptr;
+    uint8_t static_args;
+    uint8_t* dynamic_args;
 
     char cmd[CMD_CHAR_MAX + 1];
 
@@ -50,7 +50,7 @@ class _serial_command {
         void poll();
 
         // add a user-defined command and callback that can be executed via serial commands
-        void register_command(char* cmd, uint8_t num_args);
+        void register_command(char* cmd, uint8_t static_args, uint8_t* dynamic_args = nullptr);
 
         // void register_command_dynamic(char* cmd, uint8_t* num_args);
 

@@ -10,6 +10,4 @@
 
 void TMC_Begin();
 
-void TMC_SetupCommands();
-
 void TMC_Run();

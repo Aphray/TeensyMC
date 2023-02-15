@@ -28,8 +28,8 @@ class _stepper_control {
     public:
         _stepper_control();
 
-        // sets up the timers for the step and pulse ISRs
-        void setup_timers();
+        // initialization
+        void begin();
 
         // sorts the steppers by distance (largest -> smallest)
         void sort_steppers();
@@ -53,7 +53,7 @@ class _stepper_control {
         // returns the speed (in steps/sec) of the accelerator
         float get_accelerator_speed();
 
-        // returns number of registered steppers
+        // returns the stepper count
         uint8_t get_num_steppers();
 
         // returns the master stepper (largest distance to travel)

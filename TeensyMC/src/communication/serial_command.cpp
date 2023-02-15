@@ -76,7 +76,7 @@ void _serial_command::poll() {
 }
 
 
-void _serial_command::register_command(char* cmd, uint8_t num_args) {
+void _serial_command::register_command(char* cmd, uint8_t static_args, uint8_t* dynamic_args = nullptr) {
     // checks
     if (strlen(cmd) > CMD_CHAR_MAX) { return; }
     if (num_cmds == MAX_USER_COMMANDS) { return; }
@@ -92,7 +92,8 @@ void _serial_command::register_command(char* cmd, uint8_t num_args) {
 
     // build the command if it doesn't already exist
     _user_command* command = &commands[num_cmds++];
-    command->num_args = num_args;
+    command->static_args = static_args;
+    command->dynamic_args = dynamic_args;
     strcpy(command->cmd, cmd);
 }
 
@@ -132,7 +133,7 @@ void _serial_command::parse(char* data) {
         if (STR_CMP(cmd, command->cmd)) {
 
             // check if the argument count matches
-            if (arg_list.count == command->num_args) {
+            if (arg_list.count == ((command->dynamic_args != nullptr) ? command->static_args + (*command->dynamic_args) : command->static_args)) {
 
                 // execute the callbacks and pass the arguments
                 for (uint8_t i = 0; i < command->num_cbs; i ++) {
@@ -143,7 +144,7 @@ void _serial_command::parse(char* data) {
             } else {
                 // post error about argument mismatch
                 TMCMessageAgent.post_message(ERROR, "Command <%s> requires (exactly) %i arg%s, but given %i", 
-                        cmd, command->num_args, (command->num_args > 1) ? "s" : "", arg_list.count);
+                        cmd, command->static_args, (command->static_args > 1) ? "s" : "", arg_list.count);
             }
             return;
         }
