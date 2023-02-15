@@ -103,6 +103,12 @@ uint8_t Stepper::get_axis_id() {
     return axis;
 }
 
+void Stepper::prepare(Stepper* master, float* start_speed, float* speed, float* accel) {
+    float norm = delta / master->delta;
+
+    
+}
+
 bool Stepper::cmp_delta(Stepper* a, Stepper* b) {
     return a->delta > b->delta;
 }

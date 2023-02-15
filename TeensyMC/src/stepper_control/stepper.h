@@ -60,6 +60,9 @@ class Stepper {
         // returns the axis number
         uint8_t get_axis_id();
 
+        // prepares the stepper for movement
+        void prepare(Stepper* master, float* speed, float* accel);
+
         // do a single step
         bool step(Stepper* master) __always_inline;
 

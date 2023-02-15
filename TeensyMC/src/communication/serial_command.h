@@ -31,8 +31,9 @@ typedef void (*CommandCallback)(char*, ArgList*);
 
 
 struct _user_command {
-    uint8_t num_args;
     uint8_t num_cbs;
+    uint8_t num_args;
+
     char cmd[CMD_CHAR_MAX + 1];
 
     CommandCallback callbacks[MAX_USER_CALLBACKS];
