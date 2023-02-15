@@ -34,14 +34,17 @@ class _stepper_control {
         // sorts the steppers by distance (largest -> smallest)
         void sort_steppers();
         
-        // add a stepper; axis starts from 0 
-        void add_stepper(Stepper* stepper);
+        // add a stepper
+        void add_stepper(Stepper& stepper);
 
         // initiate a move
         void start_move(float speed, float accel);
 
         // returns whether the steppers are currently runnin
         bool steppers_active();
+
+        // returns whether the steppers were homed
+        bool steppers_homed();
 
         // posts the stepper status info to the serial output
         // if 'queue' is set to true, the message is placed in the message queue and posted from the main loop (for usage inside ISRs)

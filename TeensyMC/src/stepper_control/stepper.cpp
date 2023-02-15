@@ -103,10 +103,28 @@ uint8_t Stepper::get_axis_id() {
     return axis;
 }
 
+uint32_t Stepper::get_delta() {
+    return delta;
+}
+
+bool Stepper::is_homed() {
+    return homed;
+}
+
 void Stepper::prepare(Stepper* master, float* start_speed, float* speed, float* accel) {
     float norm = delta / master->delta;
 
-    
+    if (max_speed < (*speed * norm)) {
+        *speed = max_speed / norm;
+    }
+
+    if (min_speed > (*start_speed * norm)) {
+        *start_speed = min_speed / norm;
+    }
+
+    if (max_accel < *accel) {
+        *accel = max_accel;
+    }
 }
 
 bool Stepper::cmp_delta(Stepper* a, Stepper* b) {

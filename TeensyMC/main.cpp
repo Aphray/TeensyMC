@@ -13,14 +13,14 @@ void foo(char* cmd, ArgList* args) {
 
 
 void setup() {
-    // add the steppers to the registry
-    TMCStepperControl.add_stepper(&xstepper);
-    TMCStepperControl.add_stepper(&ystepper);
-    TMCStepperControl.add_stepper(&zstepper);
-
     // run the setup/initialization
-    // IMPORTANT: must be called __AFTER__ adding the steppers
-    TMCSetup();
+    TMC_Begin();
+
+    TMCStepperControl.add_stepper(xstepper);
+    TMCStepperControl.add_stepper(ystepper);
+    TMCStepperControl.add_stepper(zstepper);
+
+    TMC_SetupCommands();
 
     // add custom serial commands
     TMCSerialCommand.register_command("FOO", 1);    // (<CMD_NAME>,<REQUIRED_NUMBER_OF_ARGUMENTS>)
@@ -30,7 +30,7 @@ void setup() {
 
 void loop() {
     // run TeensyMC
-    TMCRun();
+    TMC_Run();
 
     // do other __NON-BLOCKING__ stuff here...
 }

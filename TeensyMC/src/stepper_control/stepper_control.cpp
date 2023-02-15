@@ -19,50 +19,35 @@ void _stepper_control::sort_steppers() {
     master = steppers_sort[0];
 }
 
-void _stepper_control::add_stepper(Stepper* stepper) {
+void _stepper_control::add_stepper(Stepper& stepper) {
 
     if (++num_steppers > MAX_STEPPERS) {
         TMCMessageAgent.post_message(ERROR, "Too many steppers initialized; 'MAX_STEPPERS' is set to %i", MAX_STEPPERS);
         abort();
     }
 
-    steppers[num_steppers - 1] = stepper;
-    steppers_sort[num_steppers - 1] = stepper;
+    steppers[num_steppers - 1] = &stepper;
+    steppers_sort[num_steppers - 1] = &stepper;
 }
 
 void _stepper_control::start_move(float speed, float accel) {
-    if (master->move_complete()) return;
-
-    // float start_speed = master->min_speed;
-
-    // if (master->max_accel < accel) accel = master->max_accel;
-    // if (master->max_speed < speed) speed = master->max_speed;
+    if (master->move_complete()) { return; }
 
     float start_speed = 0;
 
-    Stepper** stepper = steppers_sort;
+    Stepper** stepper = steppers;
     while (*stepper) {
         (*stepper)->prepare(master, &start_speed, &speed, &accel);
         stepper++;
     }
 
-    // for (uint8_t n = 1; n < num_steppers; n++) {
-    //     Stepper* stepper = steppers_sort[n];
-    //     stepper->prepare(master, &speed, &accel);
-
-    //     if (steppers_sort[n]->max_accel < accel) accel = steppers_sort[n]->max_accel;
-    //     if (steppers_sort[n]->min_speed > start_speed) start_speed = steppers_sort[n]->min_speed;
-
-    //     float norm = steppers_sort[n]->delta / master->delta;
-    //     if (steppers_sort[n]->max_speed < (norm * speed)) speed = steppers_sorted[n]->max_speed / norm;
-    // }
-
+    
     if (state != HOMING || state != PROBING) {
         state = ACTIVE;
         TMCMessageAgent.post_message(INFO, "Move started");
     }
 
-    accelerator.prepare(master->delta, start_speed, speed, accel);
+    accelerator.prepare(master->get_delta(), start_speed, speed, accel);
     step_timer.setPeriod(1);
     step_timer.start();
 }
@@ -74,6 +59,15 @@ void _stepper_control::setup_timers() {
 
 bool _stepper_control::steppers_active() {
     return (state == ACTIVE || state == PROBING || state == HOMING);
+}
+
+bool _stepper_control::steppers_homed() {
+    Stepper** stepper = steppers;
+    while (*stepper) {
+        if (!(*stepper)->is_homed()) { return false; }
+        stepper++;
+    }
+    return true;
 }
 
 void _stepper_control::post_steppers_status(bool queue) {
@@ -90,11 +84,8 @@ void _stepper_control::post_steppers_status(bool queue) {
         stepper++;
     }
 
-    if (queue) {
-        TMCMessageAgent.queue_message(STATUS, message);
-    } else {
-        TMCMessageAgent.post_message(STATUS, message);
-    }
+    if (queue) { TMCMessageAgent.queue_message(STATUS, message); } 
+    else { TMCMessageAgent.post_message(STATUS, message); }
 }
 
 float _stepper_control::get_accelerator_speed() {

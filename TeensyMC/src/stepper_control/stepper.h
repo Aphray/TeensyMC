@@ -60,8 +60,14 @@ class Stepper {
         // returns the axis number
         uint8_t get_axis_id();
 
+        // returns to steps to the target
+        uint32_t get_delta();
+
+        // returns if the stepper is homed
+        bool is_homed();
+
         // prepares the stepper for movement
-        void prepare(Stepper* master, float* speed, float* accel);
+        void prepare(Stepper* master, float* start_speed, float* speed, float* accel);
 
         // do a single step
         bool step(Stepper* master) __always_inline;

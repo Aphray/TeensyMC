@@ -21,14 +21,18 @@ void post_realtime_status() {
 }
 
 
-void TMCSetup() {
-
+void TMC_Begin() {
+    // setup serial channel
     SERIAL_STREAM.begin(SERIAL_BAUDRATE);
 
     // setup step and pulse timers
     TMCStepperControl.setup_timers();
+}
+
+void TMC_SetupCommands() {
 
     // add the serial commands
+    TMCSerialCommand.register_command("MVE", TMCStepperControl.get_num_steppers() + 2);
     TMCSerialCommand.register_command("MVE", TMCStepperControl.get_num_steppers() + 2);
     TMCSerialCommand.register_command("PRB", 1);
     TMCSerialCommand.register_command("HME", 1);
@@ -45,7 +49,7 @@ void TMCSetup() {
     TMCSerialCommand.add_callback("FLT", &FLT__cb);
 }
 
-void TMCRun() {
+void TMC_Run() {
     TMCSerialCommand.poll();
     TMCMessageAgent.post_queued_messages();
     post_realtime_status();

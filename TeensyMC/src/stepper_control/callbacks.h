@@ -5,31 +5,39 @@
 
 #define CALLBACK(name) inline void name##__cb(char* cmd, ArgList* args)
 
+#define CHECK_ACTIVE if (TMCStepperControl.steppers_active()) { TMCMessageAgent.post_message(ERROR, "Command <%s> cannot run; steppers are active", cmd); return; }
+#define CHECK_HOMED if (!TMCStepperControl.steppers_homed()) { TMCMessageAgent.post_message(ERROR, "Command <%s> cannot run; steppers not homed", cmd); return; }
+
 
 CALLBACK(MVE) {
     // move command
-    TMCMessageAgent.post_message(DEBUG, cmd);
+    CHECK_ACTIVE;
+    CHECK_HOMED;
 
 }
 
 CALLBACK(PRB) {
     // probe command
-    TMCMessageAgent.post_message(DEBUG, cmd);
+    CHECK_ACTIVE;
+    CHECK_HOMED;
 
 }
 
 CALLBACK(HME) {
     // home command
+    CHECK_ACTIVE;
 
 }
 
 CALLBACK(FLT) {
     // clear fault command
+    CHECK_ACTIVE;
 
 }
 
 CALLBACK(ZRO) {
     // set zero command
+    CHECK_ACTIVE;
 
 }
 
