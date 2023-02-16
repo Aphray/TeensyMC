@@ -7,8 +7,6 @@
 
 class ArgList {
     public:
-        uint8_t count;
-
         ArgList(char* args);
 
         // get the next argument in the list
@@ -16,9 +14,12 @@ class ArgList {
 
         // reset the indexer
         void reset();
+
+        uint8_t count();
     
     private:
         uint8_t arg_idx;
+        uint8_t num_args;
 
         char args[CMD_MAX_ARGS][ARG_BUFFER_SIZE];
 

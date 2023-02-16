@@ -114,15 +114,17 @@ bool Stepper::is_homed() {
 void Stepper::prepare(Stepper* master, float* start_speed, float* speed, float* accel) {
     float norm = delta / master->delta;
 
-    if (max_speed < (*speed * norm)) {
+    if (norm == 0) { return; }
+
+    if (max_speed < ((*speed) * norm)) {
         *speed = max_speed / norm;
     }
 
-    if (min_speed > (*start_speed * norm)) {
+    if (min_speed > ((*start_speed) * norm)) {
         *start_speed = min_speed / norm;
     }
 
-    if (max_accel < *accel) {
+    if (max_accel < (*accel)) {
         *accel = max_accel;
     }
 }

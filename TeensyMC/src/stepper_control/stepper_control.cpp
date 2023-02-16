@@ -55,7 +55,7 @@ void _stepper_control::add_stepper(Stepper& stepper) {
 }
 
 void _stepper_control::start_move(float speed, float accel) {
-    if (master->move_complete()) { return; }
+    if (!master->move_complete()) { return; }
 
     float start_speed = 0;
 
@@ -74,6 +74,24 @@ void _stepper_control::start_move(float speed, float accel) {
     accelerator.prepare(master->get_delta(), start_speed, speed, accel);
     step_timer.setPeriod(1);
     step_timer.start();
+}
+
+void _stepper_control::home(uint8_t axis) {
+    if (axis > num_steppers) { return; }
+    _stepper_control::home(steppers[axis]);
+}
+
+void _stepper_control::home(Stepper* stepper) {
+    if (stepper == nullptr) { return; }
+
+    Stepper** other_stepper = steppers;
+    while (*other_stepper) {
+        if (*other_stepper != stepper) {
+            (*other_stepper)->set_target_rel(0);
+        } else {
+
+        }
+    }
 }
 
 bool _stepper_control::steppers_active() {
@@ -117,6 +135,24 @@ uint8_t _stepper_control::get_num_steppers() {
 
 Stepper* _stepper_control::get_master_stepper() {
     return master;
+}
+
+Stepper* _stepper_control::get_stepper(uint8_t axis) {
+    return (axis < num_steppers) ? steppers[axis] : nullptr;
+}
+
+Stepper* _stepper_control::get_next_stepper() {
+    static uint8_t idx = 0;
+    if (idx == num_steppers) {
+        idx = 0;
+        return nullptr;
+    } else {
+        return steppers[idx++];
+    }
+}
+
+Stepper** _stepper_control::get_all_steppers() {
+    return steppers;
 }
 
 void _stepper_control::step_ISR() {

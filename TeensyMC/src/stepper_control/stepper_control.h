@@ -40,6 +40,10 @@ class _stepper_control {
         // initiate a move
         void start_move(float speed, float accel);
 
+        // home one stepper
+        void home(uint8_t axis);
+        void home(Stepper* stepper);
+
         // returns whether the steppers are currently runnin
         bool steppers_active();
 
@@ -56,8 +60,17 @@ class _stepper_control {
         // returns the stepper count
         uint8_t get_num_steppers();
 
-        // returns the master stepper (largest distance to travel)
+        // returns the master stepper (the one w/ the largest distance to travel)
         Stepper* get_master_stepper();
+
+        // get the stepper by axis number (starting from 0)
+        Stepper* get_stepper(uint8_t axis);
+
+        // iterator to get the steppers; returns nullptr on complete (after last stepper is recieved)
+        Stepper* get_next_stepper();
+
+        // returns all of the registered steppers
+        Stepper** get_all_steppers();
 
     private:
         StepperState state;

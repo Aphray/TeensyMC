@@ -4,16 +4,14 @@
 #define STR_CMP(a, b) (strcmp(a, b) == 0)
 
 
-
 ArgList::ArgList(char* args_) {
-    count = 0;
+    num_args = 0;
     arg_idx = 0;
 
     if (args_ != nullptr) {
         split_args(args_);
     }
 }
-
 
 void ArgList::split_args(char* args_) {
     char* ptr = args[0];
@@ -22,26 +20,29 @@ void ArgList::split_args(char* args_) {
         switch (*args_) {
             case 0:
                 *ptr = 0;
-                if (args[count][0] != 0) { count++; }
+                if (args[num_args][0] != 0) { num_args++; }
                 break;
             case ARG_DELIMITER_CHAR:
                 *ptr = 0;
-                ptr = args[(args[count][0] != 0 ? ++count : count)];
+                ptr = args[(args[num_args][0] != 0 ? ++num_args : num_args)];
                 break;
             default:
                 *ptr++ = *args_;
                 break;
         }
-    } while (*args_++ && count < CMD_MAX_ARGS);
+    } while (*args_++ && num_args < CMD_MAX_ARGS);
 }
 
-
 char* ArgList::next() {
-    return args[arg_idx++];
+    return (arg_idx < num_args) ? args[arg_idx++] : nullptr;
 }
 
 void ArgList::reset() {
     arg_idx = 0;
+}
+
+uint8_t ArgList::count() {
+    return num_args;
 }
 
 _serial_command::_serial_command(Stream* stream_) {
@@ -136,7 +137,7 @@ void _serial_command::parse(char* data) {
             uint8_t args_needed = (command->dynamic_args != nullptr) ? *(command->dynamic_args) + command->static_args : command->static_args;
 
             // check if the argument count matches
-            if (arg_list.count == args_needed) {
+            if (arg_list.count() == args_needed) {
                 
                 // execute the callbacks and pass the arguments
                 for (uint8_t i = 0; i < command->num_cbs; i ++) {
@@ -147,7 +148,7 @@ void _serial_command::parse(char* data) {
             } else {
                 // post error about argument mismatch
                 TMCMessageAgent.post_message(ERROR, "Command <%s> requires (exactly) %i arg%s, but given %i", 
-                        cmd, args_needed, (args_needed > 1) ? "s" : "", arg_list.count);
+                        cmd, args_needed, (args_needed > 1) ? "s" : "", arg_list.count());
             }
             return;
         }
