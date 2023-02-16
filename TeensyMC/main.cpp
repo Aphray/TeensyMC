@@ -16,6 +16,11 @@ void setup() {
     // run the setup/initialization
     TMC_Begin();
 
+    xstepper.set_units_per_step(0.0015);
+    xstepper.set_speed_limits(0.01, 20);
+    xstepper.set_travel_limits(-200, 200);
+
+
     TMCStepperControl.add_stepper(xstepper);
     TMCStepperControl.add_stepper(ystepper);
     TMCStepperControl.add_stepper(zstepper);

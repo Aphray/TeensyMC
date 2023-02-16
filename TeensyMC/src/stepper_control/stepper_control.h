@@ -37,14 +37,18 @@ class _stepper_control {
         // add a stepper
         void add_stepper(Stepper& stepper);
 
-        // initiate a move
+        // initiate a move with desired speed (in units/sec) and acceleration (in units/sec)
         void start_move(float speed, float accel);
 
         // home one stepper
-        void home(uint8_t axis);
-        void home(Stepper* stepper);
+        void start_home(uint8_t axis, float speed, float accel);
+        void start_home(Stepper* stepper, float speed, float accel);
 
-        // returns whether the steppers are currently runnin
+        // probe one stepper
+        void start_probe(uint8_t axis, float speed, float accel);
+        void start_probe(Stepper* stepper, float speed, float accel);
+
+        // returns whether the steppers are currently running
         bool steppers_active();
 
         // returns whether the steppers were homed
@@ -52,7 +56,7 @@ class _stepper_control {
 
         // posts the stepper status info to the serial output
         // if 'queue' is set to true, the message is placed in the message queue and posted from the main loop (for usage inside ISRs)
-        void post_steppers_status(bool queue);
+        void post_steppers_status(bool queue = false);
 
         // returns the speed (in steps/sec) of the accelerator
         float get_accelerator_speed();
@@ -90,10 +94,13 @@ class _stepper_control {
         // does a single step of the Bresenham algorithm
         void do_bresenham_step() __always_inline;
 
+        void finish_move() __always_inline;
+
         // ISRs for the stepping and pulsing
         void step_ISR();
         void pulse_ISR();
 
+        void run_steppers(float speed, float accel);
 };
 
 inline void _stepper_control::do_bresenham_step() {
@@ -104,6 +111,18 @@ inline void _stepper_control::do_bresenham_step() {
             in_fault = *stepper;
             return;
         }
+        stepper++;
+    }
+}
+
+inline void _stepper_control::finish_move() {
+    step_timer.stop();
+    accelerator.reset();
+    post_steppers_status(true);
+
+    Stepper** stepper = steppers;
+    while (*stepper) {
+        (*stepper)->finish_move();
         stepper++;
     }
 }

@@ -15,7 +15,7 @@ void post_realtime_status() {
     uint32_t period = TMCStepperControl.steppers_active() ? ACTIVE_REPORT_MILLIS : IDLE_REPORT_MILLIS;
 
     if ((millis() - last_millis) >= period) {
-        TMCStepperControl.post_steppers_status(false);  // 'false' to post directly, no need to queue
+        TMCStepperControl.post_steppers_status(); 
         last_millis = millis();
     }
 }

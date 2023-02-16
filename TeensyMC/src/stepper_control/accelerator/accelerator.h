@@ -8,16 +8,22 @@ float interpf(float x0, float y0, float x1, float y1, float x) __always_inline;
 class _accelerator {
 
     public:
-        float current_speed;
-        uint32_t current_step;
 
         _accelerator();
 
         void prepare(uint32_t steps, float initial_speed, float target_speed, float accel);
 
+        void reset();
+
+        float get_speed();
+
+        void decelerate_now();
+
         float compute_next_step_period();
 
     private:
+        float current_speed;
+        uint32_t current_step;
 
         uint32_t accel_stop;
         uint32_t decel_start;

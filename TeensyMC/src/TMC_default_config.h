@@ -76,3 +76,11 @@
 #ifndef PULSE_WIDTH_US
     #define PULSE_WIDTH_US 4
 #endif
+
+#ifndef HOMING_SCALAR
+    #define HOMING_SCALAR 1.5
+#endif
+
+#ifndef PROBING_SCALAR
+    #define PROBING_SCALAR 1.5
+#endif

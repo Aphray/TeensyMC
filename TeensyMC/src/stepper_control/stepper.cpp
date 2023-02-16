@@ -5,18 +5,23 @@
 uint8_t Stepper::count = 0;
 
 Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_): dir_pin(dir_pin_),step_pin(step_pin_) {
-    pinMode(dir_pin, OUTPUT);
-    pinMode(dir_pin, OUTPUT);
 
-    homed = true;
     invert_dir = false;
     invert_step = false;
+    invert_home = false;
+    homed = HOME_STEPPERS_FIRST ? false : true;
 
     axis = count++;
     
+    delta = 0;
     position = 0;
     target_position = 0;
 
+    probe_home_dir = 0;
+    probe_home_scalar = 1;
+
+    pinMode(dir_pin, OUTPUT);
+    pinMode(dir_pin, OUTPUT);
     set_units_per_step(1.0f);
 }
 
@@ -28,25 +33,37 @@ void Stepper::invert_step_polarity() {
     invert_step = true;
 }
 
-void Stepper::set_max_accel(float max_accel_) {
-    max_accel = max_accel_;
-}
-
-void Stepper::set_speed_limits(float min_speed_, float max_speed_) {
-    min_speed = min_speed_;
-    max_speed = max_speed_;
-}
-
-void Stepper::set_travel_limits(int32_t min_travel_, int32_t max_travel_) {
-    min_travel = min_travel_;
-    max_travel = max_travel_;
+void Stepper::invert_home_dir() {
+    invert_home = true;
 }
 
 void Stepper::set_units_per_step(float units_per_step_) {
     units_per_step = units_per_step_;
 }
 
-float Stepper::get_position_in_units() {
+float Stepper::cvt_to_units(int32_t steps) {
+    return (float) steps * units_per_step;
+}
+
+float Stepper::cvt_to_steps(float units) {
+    return units / units_per_step;
+}
+
+void Stepper::set_max_accel(float max_accel_) {
+    max_accel = cvt_to_steps(max_accel_);
+}
+
+void Stepper::set_speed_limits(float min_speed_, float max_speed_) {
+    min_speed = cvt_to_steps(min_speed_);
+    max_speed = cvt_to_steps(max_speed_);
+}
+
+void Stepper::set_travel_limits(float min_travel_, float max_travel_) {
+    min_travel = cvt_to_steps(min_travel_);
+    max_travel = cvt_to_steps(max_travel_);
+}
+
+float Stepper::get_position() {
     return position * units_per_step;
 }
 
@@ -55,11 +72,11 @@ void Stepper::set_direction(int8_t dir_) {
     digitalWriteFast(dir_pin, (!invert_dir ? HIGH : LOW));
 }
 
-void Stepper::set_target_abs(int32_t abs_pos) {
+void Stepper::set_target_abs_steps(int32_t abs_pos) {
     set_target_rel(abs_pos - position);
 }
 
-void Stepper::set_target_rel(int32_t rel_pos) {
+void Stepper::set_target_rel_steps(int32_t rel_pos) {
     delta = abs(rel_pos);
     target_position = position + rel_pos;
 
@@ -74,46 +91,55 @@ void Stepper::set_target_rel(int32_t rel_pos) {
     TMCStepperControl.sort_steppers();
 }
 
-void Stepper::set_target_abs_units(float abs_pos) {
-    set_target_abs((int32_t) (abs_pos / units_per_step));
+void Stepper::set_target_abs(float abs_pos) {
+    set_target_abs_steps(cvt_to_steps(abs_pos));
 }
 
-void Stepper::set_target_rel_units(float rel_pos) {
-    set_target_rel((int32_t) (rel_pos / units_per_step));
+void Stepper::set_target_rel(float rel_pos) {
+    set_target_rel_steps(cvt_to_steps(rel_pos));
 }
 
 void Stepper::set_homing_callback(int8_t (*callback)()) {
-    homed = false;
     homing_callback = callback;
 }
 
-void Stepper::set_probing_callback(int8_t (*callback)()) {
-    probing_callback = callback;
-}
-
-float Stepper::get_speed() {
-    return (TMCStepperControl.get_accelerator_speed() * delta / TMCStepperControl.get_master_stepper()->delta);
-}
-
-float Stepper::get_speed_in_units() {
-    return get_speed() * units_per_step;
-}
-
-uint8_t Stepper::get_axis_id() {
-    return axis;
-}
-
-uint32_t Stepper::get_delta() {
-    return delta;
+void Stepper::prepare_homing() {
+    homed = false;
+    probe_home_scalar = HOMING_SCALAR;
+    probe_home_dir = (invert_home) ? -1 : 1;    
 }
 
 bool Stepper::is_homed() {
     return homed;
 }
 
-void Stepper::prepare(Stepper* master, float* start_speed, float* speed, float* accel) {
+
+void Stepper::set_probing_callback(int8_t (*callback)()) {
+    probing_callback = callback;
+}
+
+void Stepper::prepare_probing(int8_t dir_) {
+    probe_home_scalar = PROBING_SCALAR;
+    probe_home_dir = (dir < 0) ? -1: 1;
+}
+
+float Stepper::get_speed() {
+    return cvt_to_units(TMCStepperControl.get_accelerator_speed() * delta / TMCStepperControl.get_master_stepper()->delta);
+}
+
+uint8_t Stepper::get_axis_id() {
+    return axis;
+}
+
+uint32_t Stepper::get_delta_steps() {
+    return delta;
+}
+
+
+void Stepper::constrain_speed_accel(Stepper* master, float* start_speed, float* speed, float* accel) {
     float norm = delta / master->delta;
 
+    // skip if the stepper isn't planned to move (i.e., delta = 0)
     if (norm == 0) { return; }
 
     if (max_speed < ((*speed) * norm)) {
@@ -127,6 +153,13 @@ void Stepper::prepare(Stepper* master, float* start_speed, float* speed, float* 
     if (max_accel < (*accel)) {
         *accel = max_accel;
     }
+}
+
+void Stepper::finish_move() {
+    delta = 0;
+    probe_home_dir = 0;
+    probe_home_scalar = 1;
+    target_position = position;
 }
 
 bool Stepper::cmp_delta(Stepper* a, Stepper* b) {

@@ -8,7 +8,6 @@
 #include "../communication/serial_command.h"
 
 
-
 _stepper_control::_stepper_control() {
     num_steppers = 0;
     state = HOME_STEPPERS_FIRST ? HOME_FIRST : IDLE;
@@ -55,43 +54,46 @@ void _stepper_control::add_stepper(Stepper& stepper) {
 }
 
 void _stepper_control::start_move(float speed, float accel) {
-    if (!master->move_complete()) { return; }
+    if (steppers_active()) { return; }
 
-    float start_speed = 0;
-
-    Stepper** stepper = steppers;
-    while (*stepper) {
-        (*stepper)->prepare(master, &start_speed, &speed, &accel);
-        stepper++;
-    }
-
-    
-    if (state != HOMING || state != PROBING) {
-        state = ACTIVE;
-        TMCMessageAgent.post_message(INFO, "Move started");
-    }
-
-    accelerator.prepare(master->get_delta(), start_speed, speed, accel);
-    step_timer.setPeriod(1);
-    step_timer.start();
+    state = ACTIVE;
+    run_steppers(speed, accel);
 }
 
-void _stepper_control::home(uint8_t axis) {
+void _stepper_control::start_home(uint8_t axis, float speed, float accel) {
     if (axis > num_steppers) { return; }
-    _stepper_control::home(steppers[axis]);
+    _stepper_control::start_home(steppers[axis], speed, accel);
 }
 
-void _stepper_control::home(Stepper* stepper) {
-    if (stepper == nullptr) { return; }
+void _stepper_control::start_home(Stepper* stepper, float speed, float accel) {
+    if (stepper == nullptr || steppers_active()) { return; }
+    state = HOMING;
+    stepper->prepare_homing();
+    run_steppers(speed, accel);
+}
 
-    Stepper** other_stepper = steppers;
-    while (*other_stepper) {
-        if (*other_stepper != stepper) {
-            (*other_stepper)->set_target_rel(0);
-        } else {
+void _stepper_control::start_probe(uint8_t axis, float speed, float accel) {
+    if (axis > num_steppers) { return; }
+    _stepper_control::start_probe(steppers[axis], speed, accel);
+}
 
-        }
-    }
+void _stepper_control::start_probe(Stepper* stepper, float speed, float accel) {
+    if (stepper == nullptr || steppers_active()) { return; }
+    state = PROBING;
+    stepper->prepare_probing();
+    run_steppers(speed, accel);
+}
+
+void _stepper_control::stop() {
+    if (!steppers_active()) { return; }
+    accelerator.decelerate_now();
+}
+
+void _stepper_control::halt() {
+    if (!steppers_active()) { return; }
+
+    state = FAULT;
+    finish_move();
 }
 
 bool _stepper_control::steppers_active() {
@@ -107,7 +109,7 @@ bool _stepper_control::steppers_homed() {
     return true;
 }
 
-void _stepper_control::post_steppers_status(bool queue) {
+void _stepper_control::post_steppers_status(bool queue = false) {
     static const char* const STEPPER_STATE_STRINGS[] = { STEPPER_STATES(MAKE_STRINGS) };
 
     char message[MESSAGE_BUFFER_SIZE];
@@ -116,7 +118,7 @@ void _stepper_control::post_steppers_status(bool queue) {
     Stepper** stepper = steppers;
     while (*stepper) {
         sprintf(message + strlen(message), " AX%i:(%f,%f)", 
-            (*stepper)->get_axis_id(), (*stepper)->get_position_in_units(), (*stepper)->get_speed_in_units());
+            (*stepper)->get_axis_id(), (*stepper)->get_position(), (*stepper)->get_speed());
 
         stepper++;
     }
@@ -126,7 +128,7 @@ void _stepper_control::post_steppers_status(bool queue) {
 }
 
 float _stepper_control::get_accelerator_speed() {
-    return accelerator.current_speed;
+    return accelerator.get_speed();
 }
 
 uint8_t _stepper_control::get_num_steppers() {
@@ -161,8 +163,7 @@ void _stepper_control::step_ISR() {
         case HOME_FIRST:
         case FAULT:
         case IDLE:
-            step_timer.stop();
-            post_steppers_status(true);
+            finish_move();
             break;
 
         case ACTIVE:
@@ -172,16 +173,13 @@ void _stepper_control::step_ISR() {
 
             if (in_fault) {
                 state = FAULT;
-                step_timer.stop();
+                finish_move();
                 TMCMessageAgent.queue_message(CRITICAL, "Fault: software limit on axis %d", in_fault->get_axis_id());
-                post_steppers_status(true);
 
             } else if (master->move_complete()) {
                 state = IDLE;
-                step_timer.stop();
-                accelerator.current_speed = 0;
+                finish_move();
                 TMCMessageAgent.queue_message(INFO, "Move complete");
-                post_steppers_status(true);
 
             } else {
                 step_timer.setPeriod(accelerator.compute_next_step_period());
@@ -198,4 +196,21 @@ void _stepper_control::pulse_ISR() {
         (*stepper)->clear_step();
         stepper++;
     }
+}
+
+void _stepper_control::run_steppers(float speed, float accel) {
+
+    float start_speed = 0;
+    speed = master->cvt_to_steps(speed);
+    accel = master->cvt_to_steps(accel);
+
+    Stepper** stepper = steppers;
+    while (*stepper) {
+        (*stepper)->constrain_speed_accel(master, &start_speed, &speed, &accel);
+        stepper++;
+    }
+
+    accelerator.prepare(master->get_delta_steps(), start_speed, speed, accel);
+    step_timer.setPeriod(1);
+    step_timer.start();
 }

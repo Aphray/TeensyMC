@@ -104,6 +104,14 @@ void _accelerator::prepare(uint32_t steps, float initial_speed_, float target_sp
     }
 }
 
+void _accelerator::reset() {
+    current_speed = 0;
+    current_step = 0;
+}
+
+float _accelerator::get_speed() {
+    return current_speed;
+}
 
 float _accelerator::compute_next_step_period() {
     current_step++;

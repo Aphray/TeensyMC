@@ -22,12 +22,14 @@ CALLBACK(MVE) {
         float pos_f = 0;
         switch (*pos_c) {
             case 'A':
-                stepper->set_target_abs_units(pos_f);
+                stepper->set_target_abs(pos_f);
                 break;
             
             case 'R':
+                stepper->set_target_rel(pos_f);
+                break;
+                
             case ARG_SKIP_CHAR:
-                stepper->set_target_rel_units(pos_f);
                 break;
 
             default:
