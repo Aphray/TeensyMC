@@ -51,6 +51,12 @@ class Stepper {
         // attach a callback to be executed during probing (i.e., to read a switch/sensor)
         void set_probing_callback(int8_t (*callback)());
 
+        // check if probing is complete (1 -> complete, 0 -> incomplete, -1 -> error)
+        int8_t probing_complete();
+
+        // check if homing is complete (1 -> complete, 0 -> incomplete, -1 -> error)
+        int8_t homing_complete();
+
         // returns the (mapped) speed (in steps/sec)
         float get_speed();
 
@@ -107,10 +113,11 @@ class Stepper {
 
         float units_per_step;
 
+        static uint8_t count;
+
+        // user-defined callbacks for homing and probing
         int8_t (*homing_callback)();
         int8_t (*probing_callback)();
-
-        static uint8_t count;
 
         // do a single step
         bool step() __always_inline;
