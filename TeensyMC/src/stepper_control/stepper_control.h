@@ -45,8 +45,8 @@ class _stepper_control {
         void start_home(Stepper* stepper, float speed, float accel);
 
         // probe one stepper
-        void start_probe(uint8_t axis, float speed, float accel);
-        void start_probe(Stepper* stepper, float speed, float accel);
+        void start_probe(uint8_t axis, float speed, float accel, int8_t dir);
+        void start_probe(Stepper* stepper, float speed, float accel, int8_t dir);
 
         // controlled stop (with deceleration)
         void stop();

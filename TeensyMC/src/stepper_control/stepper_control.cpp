@@ -72,15 +72,15 @@ void _stepper_control::start_home(Stepper* stepper, float speed, float accel) {
     run_steppers(speed, accel);
 }
 
-void _stepper_control::start_probe(uint8_t axis, float speed, float accel) {
+void _stepper_control::start_probe(uint8_t axis, float speed, float accel, int8_t dir) {
     if (axis > num_steppers) { return; }
-    _stepper_control::start_probe(steppers[axis], speed, accel);
+    _stepper_control::start_probe(steppers[axis], speed, accel, dir);
 }
 
-void _stepper_control::start_probe(Stepper* stepper, float speed, float accel) {
+void _stepper_control::start_probe(Stepper* stepper, float speed, float accel, int8_t dir) {
     if (stepper == nullptr || steppers_active()) { return; }
     state = PROBING;
-    stepper->prepare_probing();
+    stepper->prepare_probing(dir);
     run_steppers(speed, accel);
 }
 
