@@ -132,9 +132,12 @@ void _serial_command::parse(char* data) {
         // check if the parsed command matches the stored command
         if (STR_CMP(cmd, command->cmd)) {
 
-            // check if the argument count matches
-            if (arg_list.count == ((command->dynamic_args != nullptr) ? command->static_args + (*command->dynamic_args) : command->static_args)) {
+            // number of arguments needed
+            uint8_t args_needed = (command->dynamic_args != nullptr) ? *(command->dynamic_args) + command->static_args : command->static_args;
 
+            // check if the argument count matches
+            if (arg_list.count == args_needed) {
+                
                 // execute the callbacks and pass the arguments
                 for (uint8_t i = 0; i < command->num_cbs; i ++) {
                     (*command->callbacks[i])(cmd, &arg_list);
@@ -144,7 +147,7 @@ void _serial_command::parse(char* data) {
             } else {
                 // post error about argument mismatch
                 TMCMessageAgent.post_message(ERROR, "Command <%s> requires (exactly) %i arg%s, but given %i", 
-                        cmd, command->static_args, (command->static_args > 1) ? "s" : "", arg_list.count);
+                        cmd, args_needed, (args_needed > 1) ? "s" : "", arg_list.count);
             }
             return;
         }
