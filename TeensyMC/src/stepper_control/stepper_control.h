@@ -48,6 +48,12 @@ class _stepper_control {
         void start_probe(uint8_t axis, float speed, float accel);
         void start_probe(Stepper* stepper, float speed, float accel);
 
+        // controlled stop (with deceleration)
+        void stop();
+
+        // immediate stop (emergency stop); no deceleration
+        void halt();
+
         // returns whether the steppers are currently running
         bool steppers_active();
 
