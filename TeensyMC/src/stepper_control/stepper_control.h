@@ -6,6 +6,7 @@
 #include "../TMC_default_config.h"
 #include "accelerator/accelerator.h"
 #include "../communication/enum_factory.h"
+#include "../communication/message_agent.h"
 
 
 #define STEPPER_STATES(X)   \
@@ -48,11 +49,18 @@ class _stepper_control {
         void start_probe(uint8_t axis, float speed, float accel, int8_t dir);
         void start_probe(Stepper* stepper, float speed, float accel, int8_t dir);
 
+        // zero a stepper
+        void zero_stepper(uint8_t axis);
+        void zero_stepper(Stepper* stepper);
+
         // controlled stop (with deceleration)
         void stop();
 
         // immediate stop (emergency stop); no deceleration
         void halt();
+
+        // clears a fault condition
+        void clear_fault();
 
         // returns whether the steppers are currently running
         bool steppers_active();
@@ -85,8 +93,8 @@ class _stepper_control {
     private:
         StepperState state;
 
-        Stepper* master;
-        Stepper* in_fault;
+        Stepper* fault_stepper;
+        Stepper* master_stepper;
         Stepper* steppers[MAX_STEPPERS + 1];
         Stepper* steppers_sort[MAX_STEPPERS + 1];
 
@@ -113,8 +121,10 @@ inline void _stepper_control::do_bresenham_step() {
     Stepper** stepper = steppers_sort;
 
     while (*stepper) {
-        if (!(*stepper)->step(master)) {
-            in_fault = *stepper;
+        if (!(*stepper)->step(master_stepper)) {
+            // fault_stepper = *stepper;
+            state = FAULT;
+            TMCMessageAgent.queue_message(CRITICAL, "Fault: software limit on axis %d", (*stepper)->get_axis_id());
             return;
         }
         stepper++;

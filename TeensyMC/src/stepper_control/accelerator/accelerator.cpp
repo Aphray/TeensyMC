@@ -113,6 +113,10 @@ float _accelerator::get_speed() {
     return current_speed;
 }
 
+void _accelerator::decelerate_now() {
+    current_step = decel_start - 1;
+}
+
 float _accelerator::compute_next_step_period() {
     current_step++;
 

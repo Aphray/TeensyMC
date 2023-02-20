@@ -45,6 +45,9 @@ class Stepper {
         // set the target position in relative coordinates (in units)
         void set_target_rel(float rel_pos);
 
+        // sets the current position to zero
+        void set_zero();
+
         // returns the current position (in units)
         float get_position();
 

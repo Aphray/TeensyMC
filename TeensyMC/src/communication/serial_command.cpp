@@ -3,6 +3,57 @@
 
 #define STR_CMP(a, b) (strcmp(a, b) == 0)
 
+bool argtoi(char* arg, int* res) {
+    int8_t sign = 1;
+
+    if (arg == nullptr) { return false; }
+
+    for (uint8_t n = 0; n < strlen(arg); n++) {
+        switch (arg[n]) {
+            case '-':
+            case '+':
+                if (n != 0) { return false; }
+                sign = (arg[n] == '+') ? 1 : -1;
+                break;
+            case '.':
+                return false;
+            default:
+                if (!isdigit(arg[n])) { return false; }
+                break;
+        }
+    }
+
+    *res = atoi(arg);
+    return true;
+
+}
+
+bool argtof(char* arg, float* res) {
+    int8_t sign = 1;
+    uint8_t decimals = 0;
+
+    if (arg == nullptr) { return false; }
+
+    for (uint8_t n = 0; n < strlen(arg); n++) {
+        switch (arg[n]) {
+            case '-':
+            case '+':
+                if (n != 0) { return false; }
+                sign = (arg[n] == '+') ? 1 : -1;
+                break;
+            case '.':
+                if (++decimals > 1) { return false; }
+                break;
+            default:
+                if (!isdigit(arg[n])) { return false; }
+                break;
+        }
+    }
+
+    *res = atof(arg);
+    return true;
+}
+
 
 ArgList::ArgList(char* args_) {
     num_args = 0;

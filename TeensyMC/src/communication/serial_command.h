@@ -5,6 +5,11 @@
 #include "../TMC_default_config.h"
 
 
+bool argtoi(char* arg, int* res);
+
+bool argtof(char* arg, float* res);
+
+
 class ArgList {
     public:
         ArgList(char* args);

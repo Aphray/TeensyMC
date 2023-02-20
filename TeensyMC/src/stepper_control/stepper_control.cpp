@@ -1,10 +1,7 @@
 #include <algorithm>
 
-#include "stepper.h"
 #include "stepper_control.h"
 #include "callbacks.h"
-#include "../communication/enum_factory.h"
-#include "../communication/message_agent.h"
 #include "../communication/serial_command.h"
 
 
@@ -21,8 +18,8 @@ void _stepper_control::begin() {
 
     // add the serial commands
     TMCSerialCommand.register_command("MVE", 2, &num_steppers);
-    TMCSerialCommand.register_command("PRB", 1);
-    TMCSerialCommand.register_command("HME", 1);
+    TMCSerialCommand.register_command("PRB", 4);
+    TMCSerialCommand.register_command("HME", 3);
     TMCSerialCommand.register_command("STP", 0);
     TMCSerialCommand.register_command("HLT", 0);
     TMCSerialCommand.register_command("FLT", 0);
@@ -39,7 +36,7 @@ void _stepper_control::begin() {
 
 void _stepper_control::sort_steppers() {
     std::sort(steppers_sort, steppers_sort + MAX_STEPPERS, Stepper::cmp_delta);
-    master = steppers_sort[0];
+    master_stepper = steppers_sort[0];
 }
 
 void _stepper_control::add_stepper(Stepper& stepper) {
@@ -84,6 +81,15 @@ void _stepper_control::start_probe(Stepper* stepper, float speed, float accel, i
     run_steppers(speed, accel);
 }
 
+void _stepper_control::zero_stepper(uint8_t axis) {
+    if (axis > num_steppers) { return; }
+    _stepper_control::zero_stepper(steppers[axis]);
+}
+
+void _stepper_control::zero_stepper(Stepper* stepper) {
+    stepper->set_zero();
+}
+
 void _stepper_control::stop() {
     if (!steppers_active()) { return; }
     accelerator.decelerate_now();
@@ -94,6 +100,12 @@ void _stepper_control::halt() {
 
     state = FAULT;
     finish_move();
+}
+
+void _stepper_control::clear_fault() {
+    if (state != FAULT) { return; }
+    fault_stepper = nullptr;
+    state = HOME_STEPPERS_FIRST ? HOME_FIRST : IDLE;
 }
 
 bool _stepper_control::steppers_active() {
@@ -136,7 +148,7 @@ uint8_t _stepper_control::get_num_steppers() {
 }
 
 Stepper* _stepper_control::get_master_stepper() {
-    return master;
+    return master_stepper;
 }
 
 Stepper* _stepper_control::get_stepper(uint8_t axis) {
@@ -168,24 +180,22 @@ void _stepper_control::step_ISR() {
 
         case ACTIVE:
         case_ACTIVE:
-        
+        {
             do_bresenham_step();
+            float period = accelerator.compute_next_step_period();
 
-            if (in_fault) {
-                state = FAULT;
+            if (state == FAULT) {
                 finish_move();
-                TMCMessageAgent.queue_message(CRITICAL, "Fault: software limit on axis %d", in_fault->get_axis_id());
 
-            } else if (master->move_complete()) {
+            } else if (master_stepper->move_complete() || period < 0) {
                 state = IDLE;
                 finish_move();
                 TMCMessageAgent.queue_message(INFO, "Move complete");
 
-            } else {
-                step_timer.setPeriod(accelerator.compute_next_step_period());
-            }
+            } else { step_timer.setPeriod(period); }
 
             pulse_timer.trigger(PULSE_WIDTH_US);
+        }
     }
 }
 
@@ -201,16 +211,16 @@ void _stepper_control::pulse_ISR() {
 void _stepper_control::run_steppers(float speed, float accel) {
 
     float start_speed = 0;
-    speed = master->cvt_to_steps(speed);
-    accel = master->cvt_to_steps(accel);
+    speed = master_stepper->cvt_to_steps(speed);
+    accel = master_stepper->cvt_to_steps(accel);
 
     Stepper** stepper = steppers;
     while (*stepper) {
-        (*stepper)->constrain_speed_accel(master, &start_speed, &speed, &accel);
+        (*stepper)->constrain_speed_accel(master_stepper, &start_speed, &speed, &accel);
         stepper++;
     }
 
-    accelerator.prepare(master->get_delta_steps(), start_speed, speed, accel);
+    accelerator.prepare(master_stepper->get_delta_steps(), start_speed, speed, accel);
     step_timer.setPeriod(1);
     step_timer.start();
 }
