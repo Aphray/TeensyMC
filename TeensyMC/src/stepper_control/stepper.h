@@ -86,7 +86,7 @@ class Stepper {
         void constrain_speed_accel(Stepper* master, float* start_speed, float* speed, float* accel);
 
         // resets internal counters; does not need to be called manually, it is called inside the stepper ISR
-        void finish_move();
+        void finish_move() __always_inline;
 
         // do a single step; does not need to be called manually, it is called inside the stepper ISR
         bool step(Stepper* master) __always_inline;
@@ -191,4 +191,11 @@ inline int8_t Stepper::homing_complete() {
 
 inline uint8_t Stepper::get_axis_id() {
     return axis;
+}
+
+inline void Stepper::finish_move() {
+    delta = 0;
+    probe_home_dir = 0;
+    probe_home_scalar = 1;
+    target_position = position;
 }
