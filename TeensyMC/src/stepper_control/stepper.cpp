@@ -151,13 +151,6 @@ void Stepper::constrain_speed_accel(Stepper* master, float* start_speed, float* 
     }
 }
 
-void Stepper::finish_move() {
-    delta = 0;
-    probe_home_dir = 0;
-    probe_home_scalar = 1;
-    target_position = position;
-}
-
 bool Stepper::cmp_delta(Stepper* a, Stepper* b) {
     return a->delta > b->delta;
 }
