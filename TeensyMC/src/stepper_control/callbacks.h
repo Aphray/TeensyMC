@@ -7,17 +7,11 @@
 #define CALLBACK(name) inline void name##__cb(char* cmd, ArgList* args)
 
 inline void CHECK_ACTIVE(char* cmd) {
-    if (TMCStepperControl.steppers_active()) { 
-        TMCMessageAgent.post_message(ERROR, "Command <%s> cannot run; steppers are active", cmd); 
-        return; 
-    }
+    if (TMCStepperControl.steppers_active()) { TMCMessageAgent.post_message(ERROR, "Command <%s> cannot run; steppers are active", cmd); }
 }
 
 inline void CHECK_HOMED(char* cmd) {
-    if (!TMCStepperControl.steppers_homed()) {
-        TMCMessageAgent.post_message(ERROR, "Command <%s> cannot run; steppers not homed", cmd); 
-        return; 
-    }
+    if (!TMCStepperControl.steppers_homed()) { TMCMessageAgent.post_message(ERROR, "Command <%s> cannot run; steppers not homed", cmd); }
 }
 
 inline void ARG_ERROR(char* arg) {
@@ -26,14 +20,17 @@ inline void ARG_ERROR(char* arg) {
 
 CALLBACK(MVE) {
     // move command
+
     CHECK_ACTIVE(cmd);
     CHECK_HOMED(cmd);
 
     for (uint8_t n = 0; n < TMCStepperControl.get_num_steppers(); n ++) {
-        char* pos_c = args->next();
+
         Stepper* stepper = TMCStepperControl.get_stepper(n);
 
+        char* pos_c = args->next();
         float pos_f = 0;
+
         switch (*pos_c) {
             case 'A':
                 if (!argtof(pos_c + 1, &pos_f)) {
@@ -61,15 +58,16 @@ CALLBACK(MVE) {
     }
 
     char* speed_c = args->next();
-    char* accel_c = args->next();
-
     float speed_f = 0;
+
     if (!argtof(speed_c, &speed_f)) {
         ARG_ERROR(speed_c);
         return;
     }
 
+    char* accel_c = args->next();
     float accel_f = 0;
+
     if (!argtof(accel_c, &accel_f)) {
         ARG_ERROR(accel_c);
         return;
@@ -80,6 +78,7 @@ CALLBACK(MVE) {
 
 CALLBACK(PRB) {
     // probe command
+    
     CHECK_ACTIVE(cmd);
     CHECK_HOMED(cmd);
 
@@ -146,6 +145,7 @@ CALLBACK(HME) {
 
 CALLBACK(FLT) {
     // clear fault command
+
     CHECK_ACTIVE(cmd);
 
     TMCStepperControl.clear_fault();
@@ -153,6 +153,7 @@ CALLBACK(FLT) {
 
 CALLBACK(ZRO) {
     // set zero command
+
     CHECK_ACTIVE(cmd);
 
     char* ax_c = args->next();
@@ -167,11 +168,13 @@ CALLBACK(ZRO) {
 }
 
 CALLBACK(STP) {
-    // stop command
+    // stop (controlled w/ deceleration) command
+
     TMCStepperControl.stop();
 }
 
 CALLBACK(HLT) {
     // halt/e-stop command
+
     TMCStepperControl.halt();
 }

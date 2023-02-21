@@ -69,7 +69,7 @@ class _stepper_control {
         bool steppers_homed();
 
         // posts the stepper status info to the serial output
-        // if 'queue' is set to true, the message is placed in the message queue and posted from the main loop (for usage inside ISRs)
+        // if 'queue' is set to true, the message is placed in the message queue and posted from the main loop (for usage inside ISR)
         void post_steppers_status(bool queue = false);
 
         // returns the speed (in steps/sec) of the accelerator
@@ -84,7 +84,7 @@ class _stepper_control {
         // get the stepper by axis number (starting from 0)
         Stepper* get_stepper(uint8_t axis);
 
-        // iterator to get the steppers; returns nullptr on complete (after last stepper is recieved)
+        // iterator to get the steppers; returns nullptr on complete (after last stepper is retrieved)
         Stepper* get_next_stepper();
 
         // returns all of the registered steppers

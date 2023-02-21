@@ -127,10 +127,6 @@ float Stepper::get_speed() {
     return cvt_to_units(TMCStepperControl.get_accelerator_speed() * delta / TMCStepperControl.get_master_stepper()->delta);
 }
 
-uint8_t Stepper::get_axis_id() {
-    return axis;
-}
-
 uint32_t Stepper::get_delta_steps() {
     return delta;
 }

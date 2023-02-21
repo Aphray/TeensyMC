@@ -64,7 +64,7 @@ class Stepper {
         void prepare_homing();
 
         // check if homing is complete (1 -> complete, 0 -> incomplete, -1 -> error)
-        int8_t homing_complete();
+        int8_t homing_complete() __always_inline;
 
         // returns if the stepper is homed
         bool is_homed();
@@ -76,10 +76,10 @@ class Stepper {
         void prepare_probing(int8_t dir);
 
         // check if probing is complete (1 -> complete, 0 -> incomplete, -1 -> error)
-        int8_t probing_complete();
+        int8_t probing_complete() __always_inline;
 
         // returns the axis number
-        uint8_t get_axis_id();
+        uint8_t get_axis_id() __always_inline;
 
         // makes sure the speed (in steps/sec) and acceleration (in steps/sec^2) are within the limits of the stepper
         // this does not need to be called manually; it is instead handled from within TMCStepperControl.start_move(...)
@@ -177,4 +177,18 @@ inline void Stepper::clear_step() {
 
 inline bool Stepper::move_complete() {
     return position == target_position;
+}
+
+inline int8_t Stepper::probing_complete() {
+    int8_t r = (*probing_callback)();
+    return r == 0 ? 0 : (r > 0 ? 1 : -1);
+}
+
+inline int8_t Stepper::homing_complete() {
+    int8_t r = (*homing_callback)();
+    return r == 0 ? 0 : (r > 0 ? 1 : -1);
+}
+
+inline uint8_t Stepper::get_axis_id() {
+    return axis;
 }

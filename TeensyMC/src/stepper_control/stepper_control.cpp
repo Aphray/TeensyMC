@@ -178,6 +178,44 @@ void _stepper_control::step_ISR() {
             finish_move();
             break;
 
+        case PROBING:
+        {
+            int8_t probing_status = master_stepper->probing_complete();
+            if (probing_status == 1) {  
+                // probing complete
+                state = IDLE;
+                finish_move();
+                TMCMessageAgent.queue_message(INFO, "Probing complete on axis %i", master_stepper->get_axis_id());
+                break;
+            } else if (probing_status == -1) {  
+                // probing error
+                state = FAULT;
+                finish_move();
+                TMCMessageAgent.queue_message(CRITICAL, "Probing failed on axis %i", master_stepper->get_axis_id());
+                break;
+            }
+            goto case_ACTIVE;
+        }
+            
+        case HOMING:
+        {
+            int8_t homing_status = master_stepper->homing_complete();
+            if (homing_status == 1) {
+                // homing complete
+                state = IDLE;
+                finish_move();
+                TMCMessageAgent.queue_message(INFO, "Homing complete on axis %i", master_stepper->get_axis_id());
+                break;
+            } else if (homing_status == -1) {
+                // homing error
+                state = FAULT;
+                finish_move();
+                TMCMessageAgent.queue_message(CRITICAL, "Homing failed on axis %i", master_stepper->get_axis_id());
+                break;
+            }
+            goto case_ACTIVE;
+        }
+
         case ACTIVE:
         case_ACTIVE:
         {
