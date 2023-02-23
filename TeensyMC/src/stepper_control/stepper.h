@@ -33,7 +33,7 @@ class Stepper {
         // set the maximum and minumum speed (in units/sec)
         void set_speed_limits(float min_speed, float max_speed);
 
-        // set the maximum and minimum travel/distance (in units)
+        // set the maximum and minimum travel distance (in units)
         void set_min_travel(float min_travel);
         void set_max_travel(float max_travel);
         void set_min_max_travel(float min_travel, float max_travel);
@@ -128,8 +128,9 @@ class Stepper {
         int32_t delta_rem;
 
         int8_t probe_home_dir;
-        float min_travel_scalar;
-        float max_travel_scalar;
+
+        float min_overshoot;
+        float max_overshoot;
 
         float units_per_step;
 
@@ -165,7 +166,7 @@ inline bool Stepper::step(Stepper* master) {
 inline bool Stepper::step() {
 
     position += dir;
-    if ((position < min_travel) || (position > max_travel)) {
+    if ((position < (min_travel - min_overshoot)) || (position > (max_travel + max_overshoot))) {
         position -= dir;
         return false;
     }
@@ -198,7 +199,7 @@ inline uint8_t Stepper::get_axis_id() {
 
 inline void Stepper::finish_move() {
     delta = 0;
-    min_travel_scalar = 1;
-    max_travel_scalar = 1;
+    min_overshoot = 0;
+    max_overshoot = 0;
     target_position = position;
 }

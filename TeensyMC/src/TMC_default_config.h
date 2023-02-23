@@ -77,10 +77,10 @@
     #define PULSE_WIDTH_US 4
 #endif
 
-#ifndef HOMING_SCALAR
-    #define HOMING_SCALAR 1.5
+#ifndef HOMING_OVERSHOOT
+    #define HOMING_OVERSHOOT 2.0
 #endif
 
-#ifndef PROBING_SCALAR
-    #define PROBING_SCALAR 1.5
+#ifndef PROBING_OVERSHOOT
+    #define PROBING_OVERSHOOT 2.0
 #endif

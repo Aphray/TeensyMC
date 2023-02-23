@@ -219,18 +219,30 @@ void _stepper_control::step_ISR() {
         case ACTIVE:
         case_ACTIVE:
         {
-            do_bresenham_step();
             float period = accelerator.compute_next_step_period();
 
-            if (state == FAULT) {
+            if (!do_bresenham_step()) {
+                state = FAULT;
                 finish_move();
+                TMCMessageAgent.queue_message(CRITICAL, "Fault occured on axis %i", fault_stepper->get_axis_id());
 
             } else if (master_stepper->move_complete() || period < 0) {
-                state = IDLE;
-                finish_move();
-                TMCMessageAgent.queue_message(INFO, "Move complete");
 
-            } else { step_timer.setPeriod(period); }
+                if (state == HOMING) {
+                    state = FAULT;
+                    TMCMessageAgent.queue_message(CRITICAL, "Homing failed on axis %i", master_stepper->get_axis_id());
+                } else if (state == PROBING) {
+                    state = FAULT;
+                    TMCMessageAgent.queue_message(CRITICAL, "Probing failed on axis %i", master_stepper->get_axis_id());
+                } else {
+                    state = IDLE;
+                    TMCMessageAgent.queue_message(INFO, "Move complete");
+                }
+                finish_move();
+
+            } else { 
+                step_timer.setPeriod(period); 
+            }
 
             pulse_timer.trigger(PULSE_WIDTH_US);
         }

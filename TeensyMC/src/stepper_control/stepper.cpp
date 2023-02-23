@@ -16,8 +16,8 @@ Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_): dir_pin(dir_pin_),step_pi
     delta = 0;
     position = 0;
     target_position = 0;
-    min_travel_scalar = 1;
-    max_travel_scalar = 1;
+    min_overshoot = 0;
+    max_overshoot = 0;
 
     pinMode(dir_pin, OUTPUT);
     pinMode(dir_pin, OUTPUT);
@@ -87,9 +87,9 @@ void Stepper::set_target_rel_steps(int32_t rel_pos) {
     delta = abs(rel_pos);
     target_position = position + rel_pos;
 
-    if ((target_position > (max_travel * max_travel_scalar)) || (target_position < (min_travel * min_travel_scalar))) {
+    if ((target_position > (max_travel + max_overshoot)) || (target_position < (min_travel - min_overshoot))) {
         TMCMessageAgent.post_message(WARNING, "Target out of bounds on axis %d, limiting travel within bounds", axis);
-        target_position = (target_position > (max_travel * max_travel_scalar)) ? (max_travel * max_travel_scalar) : (min_travel * min_travel_scalar);
+        target_position = (target_position > (max_travel + max_overshoot)) ? (max_travel + max_overshoot) : (min_travel - min_overshoot);
     }
 
     set_direction((rel_pos >= 0) ? 1 : -1);
@@ -112,13 +112,13 @@ void Stepper::prepare_homing() {
     homed = false;
 
     if (invert_home) { 
-        min_travel_scalar = HOMING_SCALAR; 
-        max_travel_scalar = 1;
-        set_target_rel_steps(min_travel * min_travel_scalar);
+        min_overshoot = cvt_to_steps(HOMING_OVERSHOOT); 
+        max_overshoot = 0;
+        set_target_abs_steps(min_travel - min_overshoot);
     } else { 
-        min_travel_scalar = 1;
-        max_travel_scalar = HOMING_SCALAR; 
-        set_target_rel_steps(max_travel * max_travel_scalar);
+        min_overshoot = 0;
+        max_overshoot = cvt_to_steps(HOMING_OVERSHOOT);
+        set_target_abs_steps(max_travel + max_overshoot);
     }
 }
 
@@ -132,13 +132,13 @@ void Stepper::set_probing_callback(int8_t (*callback)()) {
 
 void Stepper::prepare_probing(int8_t dir_) {
     if (dir_ >= 0) {
-        min_travel_scalar = 1;
-        max_travel_scalar = PROBING_SCALAR;
-        set_target_rel_steps(max_travel * max_travel_scalar);
+        min_overshoot = 0; 
+        max_overshoot = cvt_to_steps(PROBING_OVERSHOOT);
+        set_target_abs_steps(max_travel + max_overshoot);
     } else {
-        min_travel_scalar = PROBING_SCALAR;
-        max_travel_scalar = 1;
-        set_target_rel_steps(min_travel * min_travel_scalar);
+        min_overshoot = cvt_to_steps(PROBING_OVERSHOOT); 
+        max_overshoot = 0;
+        set_target_abs_steps(min_travel - min_overshoot);
     }
 }
 

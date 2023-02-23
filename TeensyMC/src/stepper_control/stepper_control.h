@@ -106,7 +106,7 @@ class _stepper_control {
         PeriodicTimer step_timer;
 
         // does a single step of the Bresenham algorithm
-        void do_bresenham_step() __always_inline;
+        bool do_bresenham_step() __always_inline;
 
         void finish_move() __always_inline;
 
@@ -117,18 +117,18 @@ class _stepper_control {
         void run_steppers(float speed, float accel);
 };
 
-inline void _stepper_control::do_bresenham_step() {
+inline bool _stepper_control::do_bresenham_step() {
     Stepper** stepper = steppers_sort;
 
     while (*stepper) {
         if (!(*stepper)->step(master_stepper)) {
-            // fault_stepper = *stepper;
-            state = FAULT;
-            TMCMessageAgent.queue_message(CRITICAL, "Fault: software limit on axis %d", (*stepper)->get_axis_id());
-            return;
+            fault_stepper = *stepper;
+            return false;
         }
         stepper++;
     }
+
+    return true;
 }
 
 inline void _stepper_control::finish_move() {
