@@ -16,9 +16,8 @@ Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_): dir_pin(dir_pin_),step_pi
     delta = 0;
     position = 0;
     target_position = 0;
-
-    probe_home_dir = 0;
-    probe_home_scalar = 1;
+    min_travel_scalar = 1;
+    max_travel_scalar = 1;
 
     pinMode(dir_pin, OUTPUT);
     pinMode(dir_pin, OUTPUT);
@@ -58,9 +57,17 @@ void Stepper::set_speed_limits(float min_speed_, float max_speed_) {
     max_speed = cvt_to_steps(max_speed_);
 }
 
-void Stepper::set_travel_limits(float min_travel_, float max_travel_) {
+void Stepper::set_min_travel(float min_travel_) {
     min_travel = cvt_to_steps(min_travel_);
+}
+
+void Stepper::set_max_travel(float max_travel_) {
     max_travel = cvt_to_steps(max_travel_);
+}
+
+void Stepper::set_min_max_travel(float min_travel_, float max_travel_) {
+    set_min_travel(min_travel_);
+    set_max_travel(max_travel_);
 }
 
 float Stepper::get_position() {
@@ -80,11 +87,9 @@ void Stepper::set_target_rel_steps(int32_t rel_pos) {
     delta = abs(rel_pos);
     target_position = position + rel_pos;
 
-    if ((target_position > max_travel) || (target_position < min_travel)) {
-        TMCMessageAgent.post_message(WARNING, 
-            "Target out of bounds on axis %d, limiting travel within bounds", axis);
-
-        target_position = (target_position > max_travel) ? max_travel : min_travel;
+    if ((target_position > (max_travel * max_travel_scalar)) || (target_position < (min_travel * min_travel_scalar))) {
+        TMCMessageAgent.post_message(WARNING, "Target out of bounds on axis %d, limiting travel within bounds", axis);
+        target_position = (target_position > (max_travel * max_travel_scalar)) ? (max_travel * max_travel_scalar) : (min_travel * min_travel_scalar);
     }
 
     set_direction((rel_pos >= 0) ? 1 : -1);
@@ -105,22 +110,36 @@ void Stepper::set_homing_callback(int8_t (*callback)()) {
 
 void Stepper::prepare_homing() {
     homed = false;
-    probe_home_scalar = HOMING_SCALAR;
-    probe_home_dir = (invert_home) ? -1 : 1;    
+
+    if (invert_home) { 
+        min_travel_scalar = HOMING_SCALAR; 
+        max_travel_scalar = 1;
+        set_target_rel_steps(min_travel * min_travel_scalar);
+    } else { 
+        min_travel_scalar = 1;
+        max_travel_scalar = HOMING_SCALAR; 
+        set_target_rel_steps(max_travel * max_travel_scalar);
+    }
 }
 
 bool Stepper::is_homed() {
     return homed;
 }
 
-
 void Stepper::set_probing_callback(int8_t (*callback)()) {
     probing_callback = callback;
 }
 
 void Stepper::prepare_probing(int8_t dir_) {
-    probe_home_scalar = PROBING_SCALAR;
-    probe_home_dir = (dir < 0) ? -1: 1;
+    if (dir_ >= 0) {
+        min_travel_scalar = 1;
+        max_travel_scalar = PROBING_SCALAR;
+        set_target_rel_steps(max_travel * max_travel_scalar);
+    } else {
+        min_travel_scalar = PROBING_SCALAR;
+        max_travel_scalar = 1;
+        set_target_rel_steps(min_travel * min_travel_scalar);
+    }
 }
 
 float Stepper::get_speed() {
@@ -131,12 +150,13 @@ uint32_t Stepper::get_delta_steps() {
     return delta;
 }
 
-
 void Stepper::constrain_speed_accel(Stepper* master, float* start_speed, float* speed, float* accel) {
     float norm = delta / master->delta;
 
     // skip if the stepper isn't planned to move (i.e., delta = 0)
-    if (norm == 0) { return; }
+    if (norm == 0) { 
+        return; 
+    }
 
     if (max_speed < ((*speed) * norm)) {
         *speed = max_speed / norm;

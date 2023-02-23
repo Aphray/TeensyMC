@@ -18,7 +18,7 @@ void setup() {
 
     xstepper.set_units_per_step(0.0015);
     xstepper.set_speed_limits(0.01, 20);
-    xstepper.set_travel_limits(-200, 200);
+    xstepper.set_min_max_travel(-200, 200);
 
 
     TMCStepperControl.add_stepper(xstepper);
