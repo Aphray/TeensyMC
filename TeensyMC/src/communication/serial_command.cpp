@@ -91,7 +91,7 @@ void ArgList::reset() {
     arg_idx = 0;
 }
 
-uint8_t ArgList::count() {
+uint8_t ArgList::get_num_args() {
     return num_args;
 }
 
@@ -187,7 +187,7 @@ void _serial_command::parse(char* data) {
             uint8_t args_needed = (command->dynamic_args != nullptr) ? *(command->dynamic_args) + command->static_args : command->static_args;
 
             // check if the argument count matches
-            if (arg_list.count() == args_needed) {
+            if (arg_list.get_num_args() == args_needed) {
                 
                 // execute the callbacks and pass the arguments
                 for (uint8_t i = 0; i < command->num_cbs; i ++) {
@@ -198,7 +198,7 @@ void _serial_command::parse(char* data) {
             } else {
                 // post error about argument mismatch
                 TMCMessageAgent.post_message(ERROR, "Command <%s> requires (exactly) %i arg%s, but given %i", 
-                        cmd, args_needed, (args_needed > 1) ? "s" : "", arg_list.count());
+                        cmd, args_needed, ((args_needed > 1) ? "s" : ""), arg_list.get_num_args());
             }
             return;
         }

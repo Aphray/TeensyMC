@@ -26,7 +26,8 @@ class ArgList {
         // reset the indexer
         void reset();
 
-        uint8_t count();
+        // returns the number of arguments 
+        uint8_t get_num_args();
     
     private:
         uint8_t arg_idx;
