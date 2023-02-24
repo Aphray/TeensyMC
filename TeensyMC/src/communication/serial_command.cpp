@@ -1,5 +1,4 @@
 #include "serial_command.h"
-#include "message_agent.h"
 
 #define STR_CMP(a, b) (strcmp(a, b) == 0)
 

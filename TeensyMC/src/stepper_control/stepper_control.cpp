@@ -20,6 +20,7 @@ void _stepper_control::begin() {
     TMCSerialCommand.register_command("MVE", 2, &num_steppers);
     TMCSerialCommand.register_command("PRB", 4);
     TMCSerialCommand.register_command("HME", 3);
+    TMCSerialCommand.register_command("LIM", 3);
     TMCSerialCommand.register_command("STP", 0);
     TMCSerialCommand.register_command("HLT", 0);
     TMCSerialCommand.register_command("FLT", 0);
@@ -28,6 +29,7 @@ void _stepper_control::begin() {
     TMCSerialCommand.add_callback("MVE", &MVE__cb);
     TMCSerialCommand.add_callback("PRB", &PRB__cb);
     TMCSerialCommand.add_callback("HME", &HME__cb);
+    TMCSerialCommand.add_callback("LIM", &LIM__cb);
     TMCSerialCommand.add_callback("STP", &STP__cb);
     TMCSerialCommand.add_callback("HLT", &HLT__cb);
     TMCSerialCommand.add_callback("FLT", &FLT__cb);

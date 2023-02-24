@@ -2,8 +2,14 @@
 
 #include <Arduino.h>
 #include <Stream.h>
+#include "message_agent.h"
 #include "../TMC_default_config.h"
 
+#define CALLBACK(name) void name##__cb(char* cmd, ArgList* args)
+
+inline void ARG_ERROR(char* arg) {
+    TMCMessageAgent.post_message(ERROR, "Command error; invalid argument (%s)", arg);
+}
 
 bool argtoi(char* arg, int* res);
 

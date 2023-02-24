@@ -1,180 +1,27 @@
 #pragma once
 
-#include "stepper_control.h"
-#include "../communication/message_agent.h"
 #include "../communication/serial_command.h"
 
-#define CALLBACK(name) inline void name##__cb(char* cmd, ArgList* args)
+// move command
+CALLBACK(MVE);
 
-inline void CHECK_ACTIVE(char* cmd) {
-    if (TMCStepperControl.steppers_active()) { TMCMessageAgent.post_message(ERROR, "Command <%s> cannot run; steppers are active", cmd); }
-}
+// probe command
+CALLBACK(PRB);
 
-inline void CHECK_HOMED(char* cmd) {
-    if (!TMCStepperControl.steppers_homed()) { TMCMessageAgent.post_message(ERROR, "Command <%s> cannot run; steppers not homed", cmd); }
-}
+// home command
+CALLBACK(HME);
 
-inline void ARG_ERROR(char* arg) {
-    TMCMessageAgent.post_message(ERROR, "Command error; invalid argument (%s)", arg);
-}
+// clear fault command
+CALLBACK(FLT);
 
-CALLBACK(MVE) {
-    // move command
+// set zero command
+CALLBACK(ZRO);
 
-    CHECK_ACTIVE(cmd);
-    CHECK_HOMED(cmd);
+// controlled stop command
+CALLBACK(STP);
 
-    for (uint8_t n = 0; n < TMCStepperControl.get_num_steppers(); n ++) {
+// halt/e-stop command
+CALLBACK(HLT);
 
-        Stepper* stepper = TMCStepperControl.get_stepper(n);
-
-        char* pos_c = args->next();
-        float pos_f = 0;
-
-        switch (*pos_c) {
-            case 'A':
-                if (!argtof(pos_c + 1, &pos_f)) {
-                    ARG_ERROR(pos_c + 1);
-                    return;
-                }
-                stepper->set_target_abs(pos_f);
-                break;
-            
-            case 'R':
-                if (!argtof(pos_c + 1, &pos_f)) {
-                    ARG_ERROR(pos_c + 1);
-                    return;
-                }
-                stepper->set_target_rel(pos_f);
-                break;
-                
-            case ARG_SKIP_CHAR:
-                break;
-
-            default:
-                ARG_ERROR(pos_c);
-                return;
-        }
-    }
-
-    char* speed_c = args->next();
-    float speed_f = 0;
-
-    if (!argtof(speed_c, &speed_f)) {
-        ARG_ERROR(speed_c);
-        return;
-    }
-
-    char* accel_c = args->next();
-    float accel_f = 0;
-
-    if (!argtof(accel_c, &accel_f)) {
-        ARG_ERROR(accel_c);
-        return;
-    }
-
-    TMCStepperControl.start_move(speed_f, accel_f);
-}
-
-CALLBACK(PRB) {
-    // probe command
-    
-    CHECK_ACTIVE(cmd);
-    CHECK_HOMED(cmd);
-
-    char* ax_c = args->next();
-    char* dir_c = args->next();
-    char* speed_c = args->next();
-    char* accel_c = args->next();
-
-    int ax_i = 0;
-    if (!argtoi(ax_c, &ax_i)) {
-        ARG_ERROR(ax_c);
-        return;
-    }
-
-    int dir_i = 0;
-    if (!argtoi(dir_c, &dir_i)) {
-        ARG_ERROR(dir_c);
-        return;
-    }
-
-    float speed_f = 0;
-    if (!argtof(speed_c, &speed_f)) {
-        ARG_ERROR(speed_c);
-        return;
-    }
-
-    float accel_f = 0;
-    if (!argtof(accel_c, &accel_f)) {
-        ARG_ERROR(accel_c);
-        return;
-    }
-
-    TMCStepperControl.start_probe(ax_i, speed_f, accel_f, dir_i);
-}
-
-CALLBACK(HME) {
-    // home command
-    CHECK_ACTIVE(cmd);
-
-    char* ax_c = args->next();
-    char* speed_c = args->next();
-    char* accel_c = args->next();
-
-    int ax_i = 0;
-    if (!argtoi(ax_c, &ax_i) || ax_i < 0) {
-        ARG_ERROR(ax_c);
-        return;
-    }
-
-    float speed_f = 0;
-    if (!argtof(speed_c, &speed_f)) {
-        ARG_ERROR(speed_c);
-        return;
-    }
-
-    float accel_f = 0;
-    if (!argtof(accel_c, &accel_f)) {
-        ARG_ERROR(accel_c);
-        return;
-    }
-
-    TMCStepperControl.start_home(ax_i, speed_f, accel_f);
-}
-
-CALLBACK(FLT) {
-    // clear fault command
-
-    CHECK_ACTIVE(cmd);
-
-    TMCStepperControl.clear_fault();
-}
-
-CALLBACK(ZRO) {
-    // set zero command
-
-    CHECK_ACTIVE(cmd);
-
-    char* ax_c = args->next();
-
-    int ax_i = 0;
-    if (!argtoi(ax_c, &ax_i) || ax_i < 0) {
-        ARG_ERROR(ax_c);
-        return;
-    }
-
-    TMCStepperControl.zero_stepper(ax_i);
-}
-
-CALLBACK(STP) {
-    // stop (controlled w/ deceleration) command
-
-    TMCStepperControl.stop();
-}
-
-CALLBACK(HLT) {
-    // halt/e-stop command
-
-    TMCStepperControl.halt();
-}
+// set limits command
+CALLBACK(LIM);
