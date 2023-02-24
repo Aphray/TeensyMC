@@ -181,45 +181,8 @@ void _stepper_control::step_ISR() {
             break;
 
         case PROBING:
-        {
-            int8_t probing_status = master_stepper->probing_complete();
-            if (probing_status == 1) {  
-                // probing complete
-                state = IDLE;
-                finish_move();
-                TMCMessageAgent.queue_message(INFO, "Probing complete on axis %i", master_stepper->get_axis_id());
-                break;
-            } else if (probing_status == -1) {  
-                // probing error
-                state = FAULT;
-                finish_move();
-                TMCMessageAgent.queue_message(CRITICAL, "Probing failed on axis %i", master_stepper->get_axis_id());
-                break;
-            }
-            goto case_ACTIVE;
-        }
-            
         case HOMING:
-        {
-            int8_t homing_status = master_stepper->homing_complete();
-            if (homing_status == 1) {
-                // homing complete
-                state = IDLE;
-                finish_move();
-                TMCMessageAgent.queue_message(INFO, "Homing complete on axis %i", master_stepper->get_axis_id());
-                break;
-            } else if (homing_status == -1) {
-                // homing error
-                state = FAULT;
-                finish_move();
-                TMCMessageAgent.queue_message(CRITICAL, "Homing failed on axis %i", master_stepper->get_axis_id());
-                break;
-            }
-            goto case_ACTIVE;
-        }
-
         case ACTIVE:
-        case_ACTIVE:
         {
             float period = accelerator.compute_next_step_period();
 
@@ -228,19 +191,50 @@ void _stepper_control::step_ISR() {
                 finish_move();
                 TMCMessageAgent.queue_message(CRITICAL, "Fault occured on axis %i", fault_stepper->get_axis_id());
 
-            } else if (master_stepper->move_complete() || period < 0) {
+            } else if (state == HOMING) {
 
-                if (state == HOMING) {
-                    state = FAULT;
-                    TMCMessageAgent.queue_message(CRITICAL, "Homing failed on axis %i", master_stepper->get_axis_id());
-                } else if (state == PROBING) {
-                    state = FAULT;
-                    TMCMessageAgent.queue_message(CRITICAL, "Probing failed on axis %i", master_stepper->get_axis_id());
-                } else {
-                    state = IDLE;
-                    TMCMessageAgent.queue_message(INFO, "Move complete");
+                switch (master_stepper->homing_complete()) {
+                    case 1:
+                        // homing complete
+                        state = IDLE;
+                        finish_move();
+                        TMCMessageAgent.queue_message(INFO, "Homing complete on axis %i", master_stepper->get_axis_id());
+                        break;
+                    case -1:
+                        // homing failure
+                        state = FAULT;
+                        finish_move();
+                        TMCMessageAgent.queue_message(CRITICAL, "Homing failed on axis %i", master_stepper->get_axis_id());
+                        break;
+                    default:
+                        // no action
+                        break;
                 }
+
+            } else if (state == PROBING) {
+
+                switch (master_stepper->probing_complete()) {
+                    case 1:
+                        // probing complete
+                        state = IDLE;
+                        finish_move();
+                        TMCMessageAgent.queue_message(INFO, "Probing complete on axis %i", master_stepper->get_axis_id());
+                        break;
+                    case -1:
+                        // probing failure
+                        state = FAULT;
+                        finish_move();
+                        TMCMessageAgent.queue_message(CRITICAL, "Probing failed on axis %i", master_stepper->get_axis_id());
+                        break;
+                    default:
+                        // no action
+                        break;
+                }
+
+            } else if (master_stepper->move_complete() || period < 0) {
+                state = IDLE;
                 finish_move();
+                TMCMessageAgent.queue_message(INFO, "Move complete");
 
             } else { 
                 step_timer.setPeriod(period); 

@@ -59,10 +59,12 @@ void Stepper::set_speed_limits(float min_speed_, float max_speed_) {
 
 void Stepper::set_min_travel(float min_travel_) {
     min_travel = cvt_to_steps(min_travel_);
+    total_travel = abs(min_travel) + abs(max_travel);
 }
 
 void Stepper::set_max_travel(float max_travel_) {
     max_travel = cvt_to_steps(max_travel_);
+    total_travel = abs(min_travel) + abs(max_travel);
 }
 
 void Stepper::set_min_max_travel(float min_travel_, float max_travel_) {
@@ -87,9 +89,9 @@ void Stepper::set_target_rel_steps(int32_t rel_pos) {
     delta = abs(rel_pos);
     target_position = position + rel_pos;
 
-    if ((target_position > (max_travel + max_overshoot)) || (target_position < (min_travel - min_overshoot))) {
+    if (!homing && ((target_position > max_travel) || (target_position < min_travel))) {
         TMCMessageAgent.post_message(WARNING, "Target out of bounds on axis %d, limiting travel within bounds", axis);
-        target_position = (target_position > (max_travel + max_overshoot)) ? (max_travel + max_overshoot) : (min_travel - min_overshoot);
+        target_position = (target_position > max_travel) ? max_travel : min_travel;
     }
 
     set_direction((rel_pos >= 0) ? 1 : -1);
@@ -110,16 +112,8 @@ void Stepper::set_homing_callback(int8_t (*callback)()) {
 
 void Stepper::prepare_homing() {
     homed = false;
-
-    if (invert_home) { 
-        min_overshoot = cvt_to_steps(HOMING_OVERSHOOT); 
-        max_overshoot = 0;
-        set_target_abs_steps(min_travel - min_overshoot);
-    } else { 
-        min_overshoot = 0;
-        max_overshoot = cvt_to_steps(HOMING_OVERSHOOT);
-        set_target_abs_steps(max_travel + max_overshoot);
-    }
+    homing = true;
+    set_target_rel_steps((total_travel + cvt_to_steps(HOMING_OVERSHOOT)) * (invert_home ? -1 : 1));
 }
 
 bool Stepper::is_homed() {

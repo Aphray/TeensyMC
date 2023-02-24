@@ -116,13 +116,18 @@ class Stepper {
         
         int32_t position;
         int32_t target_position;
+
         int32_t min_travel;
         int32_t max_travel;
+        uint32_t total_travel;
 
         bool homed;
         bool invert_dir;
         bool invert_step;
         bool invert_home;
+
+        bool homing;
+        bool probing;
 
         uint32_t delta;
         int32_t delta_rem;
@@ -166,7 +171,8 @@ inline bool Stepper::step(Stepper* master) {
 inline bool Stepper::step() {
 
     position += dir;
-    if ((position < (min_travel - min_overshoot)) || (position > (max_travel + max_overshoot))) {
+
+    if (!homing && ((position < min_travel) || (position > max_travel))) {
         position -= dir;
         return false;
     }
@@ -185,11 +191,13 @@ inline bool Stepper::move_complete() {
 
 inline int8_t Stepper::probing_complete() {
     int8_t r = (*probing_callback)();
+    if (move_complete() && r <= 0) { return -1; }
     return r == 0 ? 0 : (r > 0 ? 1 : -1);
 }
 
 inline int8_t Stepper::homing_complete() {
     int8_t r = (*homing_callback)();
+    if (move_complete() && r <= 0) { return -1; }
     return r == 0 ? 0 : (r > 0 ? 1 : -1);
 }
 
@@ -199,7 +207,12 @@ inline uint8_t Stepper::get_axis_id() {
 
 inline void Stepper::finish_move() {
     delta = 0;
+
+    homing = false;
+    probing = false;
+
     min_overshoot = 0;
     max_overshoot = 0;
+
     target_position = position;
 }
