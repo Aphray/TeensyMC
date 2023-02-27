@@ -82,7 +82,7 @@ void Stepper::set_direction(int8_t dir_) {
 }
 
 void Stepper::set_target_abs_steps(int32_t abs_pos) {
-    set_target_rel(abs_pos - position);
+    set_target_rel_steps(abs_pos - position);
 }
 
 void Stepper::set_target_rel_steps(int32_t rel_pos) {

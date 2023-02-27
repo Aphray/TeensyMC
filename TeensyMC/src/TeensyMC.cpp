@@ -2,11 +2,13 @@
 #include "TMC_default_config.h"
 #include "stepper_control/callbacks.h"
 #include "src/stepper_control/stepper_control.h"
+#include "src/event_handling/event_manager.h"
 
 
 _message_agent TMCMessageAgent = _message_agent(&SERIAL_STREAM);
 _serial_command TMCSerialCommand = _serial_command(&SERIAL_STREAM);
 _stepper_control TMCStepperControl = _stepper_control();
+_event_manager TMCEventManager = _event_manager();
 
 
 void post_realtime_status() {
@@ -30,8 +32,11 @@ void TMC_Begin() {
 }
 
 void TMC_Run() {
+    TMCEventManager.process_events();
+
     TMCSerialCommand.poll();
     TMCMessageAgent.post_queued_messages();
+    
     post_realtime_status();
 }
 

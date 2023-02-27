@@ -1,0 +1,16 @@
+#pragma once
+
+enum TMCEvents {
+    MOVE_STARTED,
+    MOVE_COMPLETE,
+
+    HOMING_STARTED,
+    HOMING_COMPLETE,
+    HOMING_FAILED,
+
+    PROBING_STARTED,
+    PROBING_COMPLETE,
+    PROBING_FAILED,
+    
+    FAULT_OCCURED
+};

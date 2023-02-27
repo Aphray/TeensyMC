@@ -84,3 +84,7 @@
 #ifndef PROBING_OVERSHOOT
     #define PROBING_OVERSHOOT 2.0
 #endif
+
+#ifndef MAX_EVENT_CALLBACKS
+    #define MAX_EVENT_CALLBACKS 20
+#endif

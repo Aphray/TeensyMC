@@ -92,6 +92,7 @@ class _stepper_control {
 
     private:
         StepperState state;
+        StepperState prev_state;
 
         Stepper* fault_stepper;
         Stepper* master_stepper;
@@ -115,6 +116,9 @@ class _stepper_control {
         void pulse_ISR();
 
         void run_steppers(float speed, float accel);
+
+        void change_state(StepperState state);
+        void restore_state();
 };
 
 inline bool _stepper_control::do_bresenham_step() {
@@ -141,6 +145,15 @@ inline void _stepper_control::finish_move() {
         (*stepper)->finish_move();
         stepper++;
     }
+}
+
+inline void _stepper_control::change_state(StepperState new_state) {
+    prev_state = state;
+    state = new_state;
+}
+
+inline void _stepper_control::restore_state() {
+    state = prev_state;
 }
 
 extern _stepper_control TMCStepperControl;

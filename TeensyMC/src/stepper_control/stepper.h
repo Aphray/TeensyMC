@@ -7,6 +7,7 @@
 class Stepper {
 
     public:
+
         Stepper(uint8_t step_pin, uint8_t dir_pin);
 
         // inverts the the HIGH/LOW signals on the step pin
@@ -113,9 +114,9 @@ class Stepper {
         float max_accel;    // maximum acceleration (steps/s^2)
 
         int8_t dir;
-        
-        int32_t position;
+
         int32_t target_position;
+        volatile int32_t position;
 
         int32_t min_travel;
         int32_t max_travel;
@@ -186,7 +187,7 @@ inline void Stepper::clear_step() {
 }
 
 inline bool Stepper::move_complete() {
-    return position == target_position;
+    return (position == target_position);
 }
 
 inline int8_t Stepper::probing_complete() {

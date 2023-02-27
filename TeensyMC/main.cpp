@@ -3,31 +3,32 @@
 // create some steppers
 Stepper xstepper(1, 2); // (<STEP_PIN>,<DIR_PIN>)
 Stepper ystepper(3, 4);
-Stepper zstepper(5, 6);
+// Stepper zstepper(5, 6);
 
-
-void foo(char* cmd, ArgList* args) {
-    TMCMessageAgent.post_message(DEBUG, "cmd=%s", cmd);
-    TMCMessageAgent.post_message(DEBUG, "arg1=%s", args->next());
+void foo() {
+    TMCMessageAgent.post_message(DEBUG, "FOO");
 }
-
 
 void setup() {
     // run the setup/initialization
     TMC_Begin();
 
-    xstepper.set_units_per_step(0.0015);
+    xstepper.set_units_per_step(0.0015625);
+    xstepper.set_max_accel(500);
     xstepper.set_speed_limits(0.01, 20);
     xstepper.set_min_max_travel(-200, 200);
+
+    ystepper.set_units_per_step(0.0015625);
+    ystepper.set_max_accel(500);
+    ystepper.set_speed_limits(0.01, 20);
+    ystepper.set_min_max_travel(-200, 200);
 
 
     TMCStepperControl.add_stepper(xstepper);
     TMCStepperControl.add_stepper(ystepper);
-    TMCStepperControl.add_stepper(zstepper);
+    // TMCStepperControl.add_stepper(zstepper);
 
-    // add custom serial commands
-    TMCSerialCommand.register_command("FOO", 1);    // (<CMD_NAME>,<REQUIRED_NUMBER_OF_ARGUMENTS>)
-    TMCSerialCommand.add_callback("FOO", &foo);     // (<CMD_NAME>,<CALLBACK>)
+    TMCEventManager.attach_callback(MOVE_COMPLETE, &foo);
 }
 
 
