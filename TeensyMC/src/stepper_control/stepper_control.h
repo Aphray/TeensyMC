@@ -81,6 +81,9 @@ class _stepper_control {
         // returns the master stepper (the one w/ the largest distance to travel)
         Stepper* get_master_stepper();
 
+        // returns the stepper which caused a fault
+        Stepper* get_faulted_stepper();
+
         // get the stepper by axis number (starting from 0)
         Stepper* get_stepper(uint8_t axis);
 

@@ -157,6 +157,10 @@ Stepper* _stepper_control::get_master_stepper() {
     return master_stepper;
 }
 
+Stepper* _stepper_control::get_faulted_stepper() {
+    return fault_stepper;
+}
+
 Stepper* _stepper_control::get_stepper(uint8_t axis) {
     return (axis < num_steppers) ? steppers[axis] : nullptr;
 }
