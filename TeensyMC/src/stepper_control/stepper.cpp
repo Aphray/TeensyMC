@@ -11,15 +11,15 @@ Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_): dir_pin(dir_pin_),step_pi
     invert_dir = false;
     invert_step = false;
     invert_home = false;
+    
     homed = HOME_STEPPERS_FIRST ? false : true;
+    homing_probing = false;
 
     axis = count++;
     
     delta = 0;
     position = 0;
     target_position = 0;
-    min_overshoot = 0;
-    max_overshoot = 0;
 
     pinMode(dir_pin, OUTPUT);
     pinMode(dir_pin, OUTPUT);

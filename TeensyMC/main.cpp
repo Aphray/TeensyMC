@@ -48,7 +48,6 @@ void setup() {
     zstepper.set_speed_limits(0.01, 20);
     zstepper.set_min_max_travel(-200, 200);
     zstepper.set_homing_callback(zhome);
-
     zstepper.set_probing_callback(&check_zprobe);
 
     TMCStepperControl.add_stepper(xstepper);
