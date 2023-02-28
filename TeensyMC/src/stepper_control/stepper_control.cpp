@@ -204,7 +204,7 @@ void _stepper_control::step_ISR() {
 
             } else if (state == HOMING) {
 
-                switch (master_stepper->homing_complete()) {
+                switch (master_stepper->homing_status()) {
                     case 1:
                         // homing complete
                         // state = IDLE;
@@ -228,7 +228,7 @@ void _stepper_control::step_ISR() {
 
             } else if (state == PROBING) {
 
-                switch (master_stepper->probing_complete()) {
+                switch (master_stepper->probing_status()) {
                     case 1:
                         // probing complete
                         // state = IDLE;

@@ -120,7 +120,7 @@ class _stepper_control {
 
         void run_steppers(float speed, float accel);
 
-        void change_state(StepperState state);
+        void change_state(StepperState state) __always_inline;
         void restore_state();
 };
 

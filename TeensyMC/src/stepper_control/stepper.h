@@ -34,9 +34,13 @@ class Stepper {
         // set the maximum and minumum speed (in units/sec)
         void set_speed_limits(float min_speed, float max_speed);
 
-        // set the maximum and minimum travel distance (in units)
+        // set the minimum travel distance (in units)
         void set_min_travel(float min_travel);
+
+        // set the maximum travel distance (in units)
         void set_max_travel(float max_travel);
+
+        // set the maximum and minimum travel distance (in units)
         void set_min_max_travel(float min_travel, float max_travel);
 
         // set the direction of travel
@@ -67,7 +71,7 @@ class Stepper {
         void prepare_homing();
 
         // check if homing is complete (1 -> complete, 0 -> incomplete, -1 -> error)
-        int8_t homing_complete() __always_inline;
+        int8_t homing_status() __always_inline;
 
         // returns if the stepper is homed
         bool is_homed();
@@ -79,7 +83,7 @@ class Stepper {
         void prepare_probing(int8_t dir);
 
         // check if probing is complete (1 -> complete, 0 -> incomplete, -1 -> error)
-        int8_t probing_complete() __always_inline;
+        int8_t probing_status() __always_inline;
 
         // returns the axis number
         uint8_t get_axis_id() __always_inline;
@@ -127,8 +131,7 @@ class Stepper {
         bool invert_step;
         bool invert_home;
 
-        bool homing;
-        bool probing;
+        bool homing_probing;
 
         uint32_t delta;
         int32_t delta_rem;
@@ -173,7 +176,7 @@ inline bool Stepper::step() {
 
     position += dir;
 
-    if (!homing && ((position < min_travel) || (position > max_travel))) {
+    if (!homing_probing && ((position < min_travel) || (position > max_travel))) {
         position -= dir;
         return false;
     }
@@ -190,13 +193,13 @@ inline bool Stepper::move_complete() {
     return (position == target_position);
 }
 
-inline int8_t Stepper::probing_complete() {
+inline int8_t Stepper::probing_status() {
     int8_t r = (*probing_callback)();
     if (move_complete() && r <= 0) { return -1; }
     return r == 0 ? 0 : (r > 0 ? 1 : -1);
 }
 
-inline int8_t Stepper::homing_complete() {
+inline int8_t Stepper::homing_status() {
     int8_t r = (*homing_callback)();
     if (move_complete() && r <= 0) { return -1; }
     return r == 0 ? 0 : (r > 0 ? 1 : -1);
@@ -208,12 +211,6 @@ inline uint8_t Stepper::get_axis_id() {
 
 inline void Stepper::finish_move() {
     delta = 0;
-
-    homing = false;
-    probing = false;
-
-    min_overshoot = 0;
-    max_overshoot = 0;
-
+    homing_probing = false;
     target_position = position;
 }
