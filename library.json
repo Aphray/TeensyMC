@@ -7,9 +7,5 @@
     "repository": {
         "type": "git",
         "url": "https://github.com/Aphray/TeensyMC"
-    },
-
-    "dependencies": {
-        "luni64/TeensyTimerTool": "*"
     }
 }
