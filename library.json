@@ -2,6 +2,6 @@
   "name": "TeensyMC",
   
   "dependencies": {
-    "TeensyTimerTool": "https://github.com/luni64/TeensyTimerTool",
+    "TeensyTimerTool": "*",
   },
 }
