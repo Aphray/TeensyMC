@@ -1,8 +1,8 @@
 #include "TeensyMC.h"
 #include "TMC_default_config.h"
 #include "stepper_control/callbacks.h"
-#include "src/stepper_control/stepper_control.h"
-#include "src/event_handling/event_manager.h"
+#include "stepper_control/stepper_control.h"
+#include "event_handling/event_manager.h"
 
 
 _message_agent TMCMessageAgent = _message_agent(&SERIAL_STREAM);
