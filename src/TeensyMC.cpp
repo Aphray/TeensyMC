@@ -1,4 +1,4 @@
-#include "../TeensyMC.h"
+#include "TeensyMC.h"
 #include "TMC_default_config.h"
 #include "stepper_control/callbacks.h"
 #include "src/stepper_control/stepper_control.h"
