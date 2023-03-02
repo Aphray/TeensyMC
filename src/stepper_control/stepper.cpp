@@ -26,19 +26,19 @@ Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_): dir_pin(dir_pin_),step_pi
     set_units_per_step(1.0f);
 }
 
-void Stepper::invert_dir_polarity() {
+void Stepper::invert_dir_polarity(bool invert) {
     GUARD_ACTIVE;
-    invert_dir = true;
+    if (invert) { invert_dir = true; }
 }
 
-void Stepper::invert_step_polarity() {
+void Stepper::invert_step_polarity(bool invert) {
     GUARD_ACTIVE;
-    invert_step = true;
+    if (invert) { invert_step = true; }
 }
 
-void Stepper::invert_home_dir() {
+void Stepper::invert_home_dir(bool invert) {
     GUARD_ACTIVE;
-    invert_home = true;
+    if (invert) { invert_home = true; }
 }
 
 void Stepper::set_units_per_step(float units_per_step_) {

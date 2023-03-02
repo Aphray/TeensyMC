@@ -11,13 +11,13 @@ class Stepper {
         Stepper(uint8_t step_pin, uint8_t dir_pin);
 
         // inverts the the HIGH/LOW signals on the step pin
-        void invert_step_polarity();
+        void invert_step_polarity(bool invert);
 
         // inverts the direction
-        void invert_dir_polarity();
+        void invert_dir_polarity(bool invert);
 
         // invert the direction for homing
-        void invert_home_dir();
+        void invert_home_dir(bool invert);
 
         // set the conversion from steps -> units (i.e., mm, inches, etc.)
         void set_units_per_step(float units_per_step);
