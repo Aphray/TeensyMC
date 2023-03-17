@@ -1,10 +1,5 @@
 #pragma once
 
-#if __has_include("TMC_user_config.h")
-    #include "TMC_user_config.h"
-#endif
-
-
 #ifndef SERIAL_STREAM
     #define SERIAL_STREAM Serial
 #endif

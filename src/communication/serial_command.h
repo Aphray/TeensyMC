@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <Stream.h>
 #include "message_agent.h"
-#include "../TMC_default_config.h"
+#include "../config.h"
 
 #define CALLBACK(name) void name##__cb(char* cmd, ArgList* args)
 

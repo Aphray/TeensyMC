@@ -3,7 +3,7 @@
 #include <queue>
 #include "Stream.h"
 #include "enum_factory.h"
-#include "../TMC_default_config.h"
+#include "../config.h"
 
 #define MESSAGE_LEVELS(X)   \
     X(STATUS)               \

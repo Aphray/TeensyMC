@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
-#include "../../TMC_default_config.h"
+#include "../../config.h"
 
 float interpf(float x0, float y0, float x1, float y1, float x) __always_inline;
 

@@ -3,7 +3,7 @@
 #include <TeensyTimerTool.h>
 
 #include "stepper.h"
-#include "../TMC_default_config.h"
+#include "../config.h"
 #include "accelerator/accelerator.h"
 #include "../communication/enum_factory.h"
 #include "../communication/message_agent.h"

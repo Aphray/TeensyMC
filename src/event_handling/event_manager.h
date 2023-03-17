@@ -5,7 +5,7 @@
 #include <Arduino.h>
 
 #include "events.h"
-#include "../TMC_default_config.h"
+#include "../config.h"
 
 
 struct _event_callback {

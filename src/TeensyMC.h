@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Arduino.h>
 #include "stepper_control/stepper.h"
 #include "communication/serial_command.h"
 #include "communication/message_agent.h"
