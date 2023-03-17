@@ -8,9 +8,12 @@ class Stepper {
 
     public:
 
-        Stepper(uint8_t dir_pin, uint8_t step_pin);
+        Stepper(uint8_t dir_pin, uint8_t step_pin, uint8_t en_pin);
 
         void begin();
+
+        // for setting enable pin
+        void enable(int8_t level);
 
         // inverts the the HIGH/LOW signals on the step pin
         void invert_step_polarity(bool invert);
@@ -112,6 +115,9 @@ class Stepper {
     private:
         const uint8_t dir_pin;
         const uint8_t step_pin;
+        const uint8_t en_pin;
+
+        bool no_en;
 
         uint8_t axis;
 

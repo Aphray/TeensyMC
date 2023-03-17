@@ -5,3 +5,5 @@
 #else
     #include "TMC_default_config.h"
 #endif
+
+#define NO_PIN -1

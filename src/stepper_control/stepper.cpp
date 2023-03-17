@@ -6,12 +6,12 @@
 
 uint8_t Stepper::count = 0;
 
-Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_): dir_pin(dir_pin_), step_pin(step_pin_) {
+Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_, uint8_t en_pin_): dir_pin(dir_pin_), step_pin(step_pin_), en_pin(en_pin_) {
 
     invert_dir = false;
     invert_step = false;
     invert_home = false;
-    
+
     #ifdef HOME_STEPPERS_FIRST
     homed = false;
     #else
@@ -32,6 +32,10 @@ Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_): dir_pin(dir_pin_), step_p
 void Stepper::begin() {
     pinMode(dir_pin, OUTPUT);
     pinMode(step_pin, OUTPUT);
+}
+
+void Stepper::enable(int8_t level) {
+    digitalWriteFast(en_pin, level);
 }
 
 void Stepper::invert_dir_polarity(bool invert) {
