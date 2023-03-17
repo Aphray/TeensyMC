@@ -14,11 +14,16 @@ inline void CHECK_HOMED(char* cmd) {
 }
 
 CALLBACK(EN) {
+    // enable command
+
     char* ax_c = args->next();
     char* en_c = args->next();
 
     int ax_i = 0;
-    if (!argtoi(ax_c, &ax_i) || ax_i < 0 || ax_i > TMCStepperControl.get_num_steppers()) {
+    bool en_all = false;
+
+    if (ax_c[0] == ARG_SKIP_CHAR) { en_all = true; }
+    else if (!argtoi(ax_c, &ax_i) || ax_i < 0 || ax_i > TMCStepperControl.get_num_steppers()) {
         ARG_ERROR(ax_c);
         return;
     } 
@@ -29,7 +34,11 @@ CALLBACK(EN) {
         return;
     }
 
-    TMCStepperControl.get_stepper(ax_i)->enable(en_i > 0 ? true : false);
+    if (en_all) {
+        for (uint8_t n = 0; n < TMCStepperControl.get_num_steppers(); n ++) {
+            TMCStepperControl.get_stepper(n)->enable(en_i > 0 ? true : false);
+        }
+    } else { TMCStepperControl.get_stepper(ax_i)->enable(en_i > 0 ? true : false); }
 }
 
 
