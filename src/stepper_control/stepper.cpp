@@ -116,6 +116,7 @@ void Stepper::set_target_abs(float abs_pos) {
 }
 
 void Stepper::set_target_rel(float rel_pos) {
+    TMCMessageAgent.post_message(DEBUG, "Target position: %f", rel_pos);
     set_target_rel_steps(cvt_to_steps(rel_pos));
 }
 
