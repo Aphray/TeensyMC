@@ -1,5 +1,7 @@
 #pragma once
 
+#define OPTION const auto
+
 #ifndef SERIAL_STREAM
     #define SERIAL_STREAM Serial
 #endif
@@ -60,9 +62,7 @@
     #define MAX_STEPPERS 6
 #endif
 
-#ifndef HOME_STEPPERS_FIRST
-    #define HOME_STEPPERS_FIRST false
-#endif
+OPTION HOME_STEPPERS_FIRST = false;
 
 #ifndef SIN_CURVE_ACCELERATION
     #define SIN_CURVE_ACCELERATION false
