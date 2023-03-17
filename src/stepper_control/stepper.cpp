@@ -99,7 +99,10 @@ void Stepper::set_target_abs_steps(int32_t abs_pos) {
 
 void Stepper::set_target_rel_steps(int32_t rel_pos) {
     GUARD_ACTIVE;
+    
     delta = abs(rel_pos);
+    set_direction((rel_pos >= 0) ? 1 : -1);
+
     target_position = position + rel_pos;
 
     if (!homing_probing && ((target_position > max_travel) || (target_position < min_travel))) {
@@ -107,7 +110,7 @@ void Stepper::set_target_rel_steps(int32_t rel_pos) {
         target_position = (target_position > max_travel) ? max_travel : min_travel;
     }
 
-    set_direction((rel_pos >= 0) ? 1 : -1);
+    
     TMCStepperControl.sort_steppers();
 }
 
