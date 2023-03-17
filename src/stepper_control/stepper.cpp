@@ -27,6 +27,7 @@ Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_, uint8_t en_pin_): dir_pin(
     target_position = 0;
 
     set_units_per_step(1.0f);
+    set_enable_level(LOW);
 }
 
 void Stepper::begin() {
@@ -35,8 +36,9 @@ void Stepper::begin() {
     pinMode(en_pin, OUTPUT);
 }
 
-void Stepper::enable(int8_t level) {
-    digitalWriteFast(en_pin, level);
+void Stepper::enable(bool state) {
+    if (state) { digitalWriteFast(en_pin, enable_level); } 
+    else { digitalWriteFast(en_pin, (enable_level == HIGH ? LOW : HIGH)); }
 }
 
 void Stepper::invert_dir_polarity(bool invert) {
@@ -52,6 +54,10 @@ void Stepper::invert_step_polarity(bool invert) {
 void Stepper::invert_home_dir(bool invert) {
     GUARD_ACTIVE;
     if (invert) { invert_home = true; }
+}
+
+void Stepper::set_enable_level(uint8_t level) {
+    enable_level = level > 0 ? HIGH : LOW;
 }
 
 void Stepper::set_units_per_step(float units_per_step_) {

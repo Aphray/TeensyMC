@@ -2,6 +2,9 @@
 
 #include "../communication/serial_command.h"
 
+// enable stepper command
+CALLBACK(EN);
+
 // move command
 CALLBACK(MVE);
 

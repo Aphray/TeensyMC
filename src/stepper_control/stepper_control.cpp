@@ -23,6 +23,7 @@ void _stepper_control::begin() {
     step_timer.begin([this]{ this->step_ISR(); }, 1000, false);
 
     // add the serial commands
+    TMCSerialCommand.register_command("EN", 2);
     TMCSerialCommand.register_command("MVE", 2, &num_steppers);
     TMCSerialCommand.register_command("PRB", 4);
     TMCSerialCommand.register_command("HME", 3);
@@ -32,6 +33,7 @@ void _stepper_control::begin() {
     TMCSerialCommand.register_command("FLT", 0);
 
     // attach callbacks
+    TMCSerialCommand.add_callback("EN", &EN__cb);
     TMCSerialCommand.add_callback("MVE", &MVE__cb);
     TMCSerialCommand.add_callback("PRB", &PRB__cb);
     TMCSerialCommand.add_callback("HME", &HME__cb);

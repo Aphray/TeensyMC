@@ -13,7 +13,7 @@ class Stepper {
         void begin();
 
         // for setting enable pin
-        void enable(int8_t level);
+        void enable(bool state);
 
         // inverts the the HIGH/LOW signals on the step pin
         void invert_step_polarity(bool invert);
@@ -23,6 +23,9 @@ class Stepper {
 
         // invert the direction for homing
         void invert_home_dir(bool invert);
+
+        // set the pin level that enables stepper
+        void set_enable_level(uint8_t level);
 
         // set the conversion from steps -> units (i.e., mm, inches, etc.)
         void set_units_per_step(float units_per_step);
@@ -117,7 +120,7 @@ class Stepper {
         const uint8_t step_pin;
         const uint8_t en_pin;
 
-        bool no_en;
+        int8_t enable_level;
 
         uint8_t axis;
 

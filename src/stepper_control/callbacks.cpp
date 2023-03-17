@@ -13,6 +13,25 @@ inline void CHECK_HOMED(char* cmd) {
     if (!TMCStepperControl.steppers_homed()) { TMCMessageAgent.post_message(ERROR, "Command <%s> cannot run; steppers not homed", cmd); }
 }
 
+CALLBACK(EN) {
+    char* ax_c = args->next();
+    char* en_c = args->next();
+
+    int ax_i = 0;
+    if (!argtoi(ax_c, &ax_i) || ax_i < 0 || ax_i > TMCStepperControl.get_num_steppers()) {
+        ARG_ERROR(ax_c);
+        return;
+    } 
+
+    int en_i = 0;
+    if (!argtoi(en_c, &en_i)) {
+        ARG_ERROR(en_c);
+        return;
+    }
+
+    TMCStepperControl.get_stepper(ax_i)->enable(en_i > 0 ? true : false);
+}
+
 
 CALLBACK(MVE) {
     // move command
