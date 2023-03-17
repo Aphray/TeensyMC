@@ -66,7 +66,7 @@
 #endif
 
 #ifndef HOME_STEPPERS_FIRST
-    #define HOME_STEPPERS_FIRST true
+    #define HOME_STEPPERS_FIRST false
 #endif
 
 #ifndef SIN_CURVE_ACCELERATION
