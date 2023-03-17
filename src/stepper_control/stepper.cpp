@@ -21,9 +21,12 @@ Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_): dir_pin(dir_pin_), step_p
     position = 0;
     target_position = 0;
 
-    pinMode(dir_pin, OUTPUT);
-    pinMode(dir_pin, OUTPUT);
     set_units_per_step(1.0f);
+}
+
+void Stepper::begin() {
+    pinMode(dir_pin, OUTPUT);
+    pinMode(dir_pin, OUTPUT);
 }
 
 void Stepper::invert_dir_polarity(bool invert) {
