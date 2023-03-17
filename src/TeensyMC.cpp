@@ -24,8 +24,6 @@ void post_realtime_status() {
 
 
 void TMC_Begin() {
-    //test...
-    
     // setup serial channel
     SERIAL_STREAM.begin(SERIAL_BAUDRATE);
 
