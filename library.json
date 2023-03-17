@@ -2,6 +2,7 @@
   "name": "TeensyMC",
   "version": "1.0",
   "dependencies": {
-    "TeensyTimerTool": "*"
+    "TeensyTimerTool": "*",
+    "luni64/pins": "*"
   }
 }
