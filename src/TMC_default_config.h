@@ -74,7 +74,7 @@
 #endif
 
 #ifndef PULSE_WIDTH_US
-    #define PULSE_WIDTH_US 4
+    #define PULSE_WIDTH_US 6
 #endif
 
 #ifndef HOMING_OVERSHOOT

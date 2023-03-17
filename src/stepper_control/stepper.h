@@ -183,12 +183,12 @@ inline bool Stepper::step() {
         return false;
     }
 
-    digitalWrite(step_pin, (!invert_step ? HIGH : LOW));
+    digitalWriteFast(step_pin, (!invert_step ? HIGH : LOW));
     return true;
 }
 
 inline void Stepper::clear_step() {
-    digitalWrite(step_pin, (!invert_step ? LOW : HIGH));
+    digitalWriteFast(step_pin, (!invert_step ? LOW : HIGH));
 }
 
 inline bool Stepper::move_complete() {
