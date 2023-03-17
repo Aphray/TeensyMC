@@ -8,7 +8,8 @@
 
 _stepper_control::_stepper_control() {
     num_steppers = 0;
-    prev_state = state = HOME_STEPPERS_FIRST ? HOME_FIRST : IDLE;
+    // prev_state = state = HOME_STEPPERS_FIRST ? HOME_FIRST : IDLE;
+    prev_state = state = IDLE;
 }
 
 void _stepper_control::begin() {

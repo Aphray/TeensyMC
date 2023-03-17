@@ -133,7 +133,7 @@ void Stepper::prepare_homing() {
 }
 
 bool Stepper::is_homed() {
-    return homed;
+    return HOME_STEPPERS_FIRST ? homed : true;
 }
 
 void Stepper::set_probing_callback(int8_t (*callback)()) {
