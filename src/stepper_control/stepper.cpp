@@ -32,6 +32,7 @@ Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_, uint8_t en_pin_): dir_pin(
 void Stepper::begin() {
     pinMode(dir_pin, OUTPUT);
     pinMode(step_pin, OUTPUT);
+    pinMode(en_pin, OUTPUT);
 }
 
 void Stepper::enable(int8_t level) {
