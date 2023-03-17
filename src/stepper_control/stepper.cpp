@@ -6,7 +6,7 @@
 
 uint8_t Stepper::count = 0;
 
-Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_): dir_pin(dir_pin_),step_pin(step_pin_) {
+Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_): dir_pin(dir_pin_), step_pin(step_pin_) {
 
     invert_dir = false;
     invert_step = false;
@@ -99,7 +99,7 @@ void Stepper::set_target_abs_steps(int32_t abs_pos) {
 
 void Stepper::set_target_rel_steps(int32_t rel_pos) {
     GUARD_ACTIVE;
-    
+
     delta = abs(rel_pos);
     set_direction((rel_pos >= 0) ? 1 : -1);
 
@@ -136,7 +136,7 @@ void Stepper::prepare_homing() {
 }
 
 bool Stepper::is_homed() {
-    return HOME_STEPPERS_FIRST ? homed : true;
+    return homed;
 }
 
 void Stepper::set_probing_callback(int8_t (*callback)()) {
