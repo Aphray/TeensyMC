@@ -1,83 +1,45 @@
 #pragma once
 
-#ifndef SERIAL_STREAM
-    #define SERIAL_STREAM Serial
-#endif
 
-#ifndef SERIAL_BAUDRATE
-    #define SERIAL_BAUDRATE 115200
-#endif
+#define SERIAL_STREAM Serial
 
-#ifndef ACTIVE_REPORT_MILLIS
-    #define ACTIVE_REPORT_MILLIS 50
-#endif
+#define SERIAL_BAUDRATE 115200
 
-#ifndef IDLE_REPORT_MILLIS
-    #define IDLE_REPORT_MILLIS 500
-#endif
+#define ACTIVE_REPORT_MILLIS 50
 
-#ifndef RX_BUFFER_SIZE
-    #define RX_BUFFER_SIZE 256
-#endif
+#define IDLE_REPORT_MILLIS 500
 
-#ifndef MESSAGE_BUFFER_SIZE
-    #define MESSAGE_BUFFER_SIZE 256
-#endif
+#define RX_BUFFER_SIZE 256
 
-#ifndef ARG_BUFFER_SIZE
-    #define ARG_BUFFER_SIZE 16
-#endif
+#define MESSAGE_BUFFER_SIZE 256
 
-#ifndef CMD_CHAR_MAX
-    #define CMD_CHAR_MAX 5
-#endif
+#define ARG_BUFFER_SIZE 16
 
-#ifndef MAX_USER_COMMANDS
-    #define MAX_USER_COMMANDS 25
-#endif
+#define CMD_CHAR_MAX 5
 
-#ifndef MAX_USER_CALLBACKS
-    #define MAX_USER_CALLBACKS 10
-#endif
+#define MAX_USER_COMMANDS 25
 
-#ifndef CMD_MAX_ARGS
-    #define CMD_MAX_ARGS 10
-#endif
+#define MAX_USER_CALLBACKS 10
 
-#ifndef CMD_DELIMITER
-    #define CMD_DELIMITER ":"
-#endif
+#define CMD_MAX_ARGS 10
 
-#ifndef ARG_DELIMITER_CHAR
-    #define ARG_DELIMITER_CHAR ','
-#endif
+#define CMD_DELIMITER ":"
 
-#ifndef ARG_SKIP_CHAR
-    #define ARG_SKIP_CHAR '*'
-#endif
+#define ARG_DELIMITER_CHAR ','
 
-#ifndef MAX_STEPPERS
-    #define MAX_STEPPERS 6
-#endif
+#define ARG_SKIP_CHAR '*'
 
-#ifndef SIN_CURVE_ACCELERATION
-    #define SIN_CURVE_ACCELERATION false
-#endif
+#define MAX_STEPPERS 6
 
-#ifndef PULSE_WIDTH_US
-    #define PULSE_WIDTH_US 4
-#endif
+#define SIN_CURVE_ACCELERATION false
 
-#ifndef HOMING_OVERSHOOT
-    #define HOMING_OVERSHOOT 2.0
-#endif
+#define PULSE_WIDTH_US 4
 
-#ifndef PROBING_OVERSHOOT
-    #define PROBING_OVERSHOOT 2.0
-#endif
+#define HOMING_OVERSHOOT 2.0
 
-#ifndef MAX_EVENT_CALLBACKS
-    #define MAX_EVENT_CALLBACKS 20
-#endif
+#define PROBING_OVERSHOOT 2.0
+
+#define MAX_EVENT_CALLBACKS 20
+
 
 // #define HOME_STEPPERS_FIRST
