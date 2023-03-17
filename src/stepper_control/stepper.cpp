@@ -90,7 +90,8 @@ float Stepper::get_position() {
 void Stepper::set_direction(int8_t dir_) {
     GUARD_ACTIVE;
     dir = (dir_ >= 0) ? 1 : -1;
-    digitalWriteFast(dir_pin, (!invert_dir ? HIGH : LOW));
+    
+    digitalWriteFast(dir_pin, (dir > 0 ? (invert_dir ? LOW : HIGH) : (invert_dir ? HIGH : LOW)));
 }
 
 void Stepper::set_target_abs_steps(int32_t abs_pos) {
