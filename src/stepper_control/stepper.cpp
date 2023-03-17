@@ -12,7 +12,11 @@ Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_): dir_pin(dir_pin_), step_p
     invert_step = false;
     invert_home = false;
     
-    homed = HOME_STEPPERS_FIRST ? false : true;
+    #ifdef HOME_STEPPERS_FIRST
+    homed = false;
+    #else
+    homed = true;
+    #endif
     homing_probing = false;
 
     axis = count++;

@@ -8,7 +8,12 @@
 
 _stepper_control::_stepper_control() {
     num_steppers = 0;
-    prev_state = state = HOME_STEPPERS_FIRST ? HOME_FIRST : IDLE;
+    
+    #ifdef HOME_STEPPERS_FIRST
+    prev_state = state = HOME_FIRST;
+    #else
+    prev_state = state = IDLE;
+    #endif
 }
 
 void _stepper_control::begin() {
@@ -111,7 +116,12 @@ void _stepper_control::halt() {
 void _stepper_control::clear_fault() {
     if (state != FAULT) { return; }
     fault_stepper = nullptr;
-    change_state(HOME_STEPPERS_FIRST ? HOME_FIRST : IDLE);
+
+    #ifdef HOME_STEPPERS_FIRST
+    change_state(HOME_FIRST);
+    #else
+    change_state(IDLE);
+    #endif
 }
 
 bool _stepper_control::steppers_active() {
