@@ -204,9 +204,9 @@ void _stepper_control::step_ISR() {
         {
 
             float period = accelerator.compute_next_step_period();
+            step_timer.setPeriod(period); 
 
             if (!do_bresenham_step()) {
-                // state = FAULT;
                 change_state(FAULT);
                 finish_move();
                 TMCEventManager.queue_event(FAULT_OCCURED);
@@ -217,7 +217,6 @@ void _stepper_control::step_ISR() {
                 switch (master_stepper->homing_status()) {
                     case 1:
                         // homing complete
-                        // state = IDLE;
                         change_state(IDLE);
                         finish_move();
                         TMCEventManager.queue_event(HOMING_COMPLETE);
@@ -225,7 +224,6 @@ void _stepper_control::step_ISR() {
                         break;
                     case -1:
                         // homing failure
-                        // state = FAULT;
                         change_state(FAULT);
                         finish_move();
                         TMCEventManager.queue_event(HOMING_FAILED);
@@ -241,7 +239,6 @@ void _stepper_control::step_ISR() {
                 switch (master_stepper->probing_status()) {
                     case 1:
                         // probing complete
-                        // state = IDLE;
                         change_state(IDLE);
                         finish_move();
                         TMCEventManager.queue_event(PROBING_COMPLETE);
@@ -249,7 +246,6 @@ void _stepper_control::step_ISR() {
                         break;
                     case -1:
                         // probing failure
-                        // state = FAULT;
                         change_state(FAULT);
                         finish_move();
                         TMCEventManager.queue_event(PROBING_FAILED);
@@ -261,14 +257,11 @@ void _stepper_control::step_ISR() {
                 }
 
             } else if (master_stepper->move_complete() || (period < 0)) {
-                // state = IDLE;
                 change_state(IDLE);
                 finish_move();
                 TMCEventManager.queue_event(MOVE_COMPLETE);
                 TMCMessageAgent.queue_message(INFO, "Move complete");
 
-            } else { 
-                step_timer.setPeriod(period); 
             }
 
             pulse_timer.trigger(PULSE_WIDTH_US);

@@ -17,6 +17,7 @@ Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_): dir_pin(dir_pin_), step_p
     #else
     homed = true;
     #endif
+
     homing_probing = false;
 
     axis = count++;
@@ -118,7 +119,6 @@ void Stepper::set_target_rel_steps(int32_t rel_pos) {
         target_position = (target_position > max_travel) ? max_travel : min_travel;
     }
 
-    
     TMCStepperControl.sort_steppers();
 }
 
@@ -139,8 +139,7 @@ void Stepper::prepare_homing() {
     GUARD_ACTIVE;
     homed = false;
     homing_probing = true;
-    set_direction((invert_home ? -1 : 1));
-    set_target_rel_steps((total_travel + cvt_to_steps(HOMING_OVERSHOOT)) * dir);
+    set_target_rel_steps((total_travel + cvt_to_steps(HOMING_OVERSHOOT)) * (invert_home ? -1 : 1));
 }
 
 bool Stepper::is_homed() {
