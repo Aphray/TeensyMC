@@ -223,8 +223,8 @@ void _stepper_control::step_ISR() {
                 switch (master_stepper->homing_status()) {
                     case 1:
                         // homing complete
-                        master_stepper->finish_homing();
-                        
+                        master_stepper->home_position();
+
                         change_state(IDLE);
                         finish_move();
                         TMCEventManager.queue_event(HOMING_COMPLETE);

@@ -120,7 +120,6 @@ void Stepper::set_target_abs_steps(int32_t abs_pos) {
 void Stepper::set_target_rel_steps(int32_t rel_pos) {
     GUARD_ACTIVE;
 
-    delta = abs(rel_pos);
     set_direction((rel_pos >= 0) ? 1 : -1);
 
     steps_traveled = 0;
@@ -130,6 +129,8 @@ void Stepper::set_target_rel_steps(int32_t rel_pos) {
         TMCMessageAgent.post_message(WARNING, "Target out of bounds on axis %d, limiting travel within bounds", axis);
         target_position = (target_position > max_travel) ? max_travel : min_travel;
     }
+
+    delta = abs(target_position - position);
 
     TMCStepperControl.sort_steppers();
 }
@@ -158,7 +159,7 @@ bool Stepper::is_homed() {
     return homed;
 }
 
-void Stepper::finish_homing() {
+void Stepper::home_position() {
     position = invert_home ? min_travel : max_travel;
 }
 
