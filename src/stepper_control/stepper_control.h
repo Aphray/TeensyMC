@@ -68,14 +68,15 @@ class _stepper_control {
         // returns whether the steppers were homed
         bool steppers_homed();
 
+        // returns whether the steppers are currently accelerating
+        bool steppers_accelerating();
+
         // posts the stepper status info to the serial output
         // if 'queue' is set to true, the message is placed in the message queue and posted from the main loop (for usage inside ISR)
         void post_steppers_status(bool queue = false);
 
         // returns the speed (in steps/sec) of the accelerator
         float get_accelerator_speed();
-
-        uint32_t get_step_num();
 
         // returns the stepper count
         uint8_t get_num_steppers();

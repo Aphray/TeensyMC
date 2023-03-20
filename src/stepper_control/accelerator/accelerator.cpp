@@ -30,6 +30,10 @@ void _accelerator::reset() {
     current_step = 0;
 }
 
+bool _accelerator::is_accelerating() {
+    return (current_step < accel_stop) || (current_step >= decel_start);
+}
+
 float _accelerator::get_speed() {
     return current_speed;
 }

@@ -19,6 +19,8 @@ class _accelerator {
 
         void decelerate_now();
 
+        bool is_accelerating();
+
         float compute_next_step_period();
 
     private:

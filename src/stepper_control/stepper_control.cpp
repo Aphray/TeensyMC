@@ -139,6 +139,10 @@ bool _stepper_control::steppers_homed() {
     return true;
 }
 
+bool _stepper_control::steppers_accelerating() {
+    return accelerator.is_accelerating();
+}
+
 void _stepper_control::post_steppers_status(bool queue = false) {
     static const char* const STEPPER_STATE_STRINGS[] = { STEPPER_STATES(MAKE_STRINGS) };
 
