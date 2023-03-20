@@ -123,6 +123,7 @@ void Stepper::set_target_rel_steps(int32_t rel_pos) {
     delta = abs(rel_pos);
     set_direction((rel_pos >= 0) ? 1 : -1);
 
+    steps_traveled = 0;
     target_position = position + rel_pos;
 
     if (!homing_probing && ((target_position > max_travel) || (target_position < min_travel))) {
@@ -171,6 +172,10 @@ void Stepper::prepare_probing(int8_t dir_) {
 
 float Stepper::get_speed() {
     return cvt_to_units(TMCStepperControl.get_accelerator_speed() * delta / TMCStepperControl.get_master_stepper()->delta);
+}
+
+uint32_t Stepper::get_steps_traveled() {
+    return steps_traveled;
 }
 
 uint32_t Stepper::get_delta_steps() {

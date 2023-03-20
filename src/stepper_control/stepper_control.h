@@ -75,6 +75,8 @@ class _stepper_control {
         // returns the speed (in steps/sec) of the accelerator
         float get_accelerator_speed();
 
+        uint32_t get_step_num();
+
         // returns the stepper count
         uint8_t get_num_steppers();
 

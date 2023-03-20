@@ -69,6 +69,9 @@ class Stepper {
         // returns the (mapped) speed (in units/sec)
         float get_speed();
 
+        // returns the number of steps traveled from the starting position
+        uint32_t get_steps_traveled();
+
         // returns the steps b/w the starting position and end position
         uint32_t get_delta_steps();
 
@@ -130,6 +133,7 @@ class Stepper {
 
         int8_t dir;
 
+        uint32_t steps_traveled;
         int32_t target_position;
         volatile int32_t position;
 
@@ -186,9 +190,11 @@ inline bool Stepper::step(Stepper* master) {
 inline bool Stepper::step() {
 
     position += dir;
+    steps_traveled++;
 
     if (!homing_probing && ((position < min_travel) || (position > max_travel))) {
         position -= dir;
+        steps_traveled--;
         return false;
     }
 
