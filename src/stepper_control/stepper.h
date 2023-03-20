@@ -84,6 +84,9 @@ class Stepper {
         // check if homing is complete (1 -> complete, 0 -> incomplete, -1 -> error)
         int8_t homing_status() __always_inline;
 
+        // cleanup to call on homing completion
+        void finish_homing();
+
         // returns if the stepper is homed
         bool is_homed();
 

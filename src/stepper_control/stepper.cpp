@@ -158,6 +158,10 @@ bool Stepper::is_homed() {
     return homed;
 }
 
+void Stepper::finish_homing() {
+    position = invert_home ? min_travel : max_travel;
+}
+
 void Stepper::set_probing_callback(int8_t (*callback)()) {
     GUARD_ACTIVE;
     probing_callback = callback;
