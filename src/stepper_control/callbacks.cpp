@@ -257,3 +257,57 @@ CALLBACK(LIM) {
         }
     }
 }
+
+CALLBACK(JOGB) {
+    // jog begin command
+
+    CHECK_ACTIVE(cmd);
+    CHECK_HOMED(cmd);
+
+    float sum_sqr;
+    float unit_vectors[TMCStepperControl.get_num_steppers()] = {0};
+
+    for (uint8_t s = 0; s < 2; s++) {
+        for (uint8_t n = 0; n < TMCStepperControl.get_num_steppers(); n ++) {
+            if (s == 0) {
+                char* pos_c = args->next();
+                float pos_f = 0;
+
+                if (*pos_c == ARG_SKIP_CHAR) {
+                    continue;
+                } else if (!argtof(pos_c, &pos_f)) { 
+                    ARG_ERROR(pos_c);
+                    return;
+                }
+                unit_vectors[n] = pos_f;
+                sum_sqr += (pos_f * pos_f);
+            } else {
+                // compute actual unit vector (u / |u|)
+                unit_vectors[n] /= sqrtf(sum_sqr);
+            }
+        }
+    }
+
+    char* speed_c = args->next();
+    float speed_f = 0;
+
+    if (!argtof(speed_c, &speed_f)) {
+        ARG_ERROR(speed_c);
+        return;
+    }
+
+    char* accel_c = args->next();
+    float accel_f = 0;
+
+    if (!argtof(accel_c, &accel_f)) {
+        ARG_ERROR(accel_c);
+        return;
+    }
+
+    TMCStepperControl.start_jogging(unit_vectors, speed_f, accel_f);
+}
+
+
+CALLBACK(JOBC) {
+    TMCStepperControl.stop_jogging();
+}

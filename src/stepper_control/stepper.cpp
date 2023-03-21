@@ -1,3 +1,5 @@
+#include <limits>
+
 #include "stepper.h"
 #include "stepper_control.h"
 #include "../communication/message_agent.h"
@@ -125,7 +127,7 @@ void Stepper::set_target_rel_steps(int32_t rel_pos) {
     steps_traveled = 0;
     target_position = position + rel_pos;
 
-    if (!homing_probing && ((target_position > max_travel) || (target_position < min_travel))) {
+    if (!jogging && !homing_probing && ((target_position > max_travel) || (target_position < min_travel))) {
         TMCMessageAgent.post_message(WARNING, "Target out of bounds on axis %d, limiting travel within bounds", axis);
         target_position = (target_position > max_travel) ? max_travel : min_travel;
     }
@@ -173,6 +175,21 @@ void Stepper::prepare_probing(int8_t dir_) {
     homing_probing = true;
     set_direction(dir_);
     set_target_rel_steps((total_travel + cvt_to_steps(PROBING_OVERSHOOT)) * dir);
+}
+
+void Stepper::prepare_jogging(float unit_vector) {
+    GUARD_ACTIVE;
+    unit_vector = constrain(unit_vector, -1, 1);
+
+    if (unit_vector == 0) {
+        return;
+    } else if (unit_vector < 0) {
+        jogging = true;
+        set_target_rel_steps(unit_vector * 1000);
+    } else {
+        jogging = true;
+        set_target_rel_steps(unit_vector * 1000);
+    }
 }
 
 float Stepper::get_speed() {

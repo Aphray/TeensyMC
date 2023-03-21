@@ -99,6 +99,9 @@ class Stepper {
         // check if probing is complete (1 -> complete, 0 -> incomplete, -1 -> error)
         int8_t probing_status() __always_inline;
 
+        // puts the stepper in jogging mode
+        void prepare_jogging(float unit_vector);
+
         // returns the axis number
         uint8_t get_axis_id() __always_inline;
 
@@ -149,6 +152,7 @@ class Stepper {
         bool invert_step;
         bool invert_home;
 
+        bool jogging;
         bool homing_probing;
 
         uint32_t delta;
@@ -210,7 +214,7 @@ inline void Stepper::clear_step() {
 }
 
 inline bool Stepper::move_complete() {
-    return (position == target_position);
+    return (jogging ? false : position == target_position);
 }
 
 inline int8_t Stepper::probing_status() {
@@ -231,6 +235,7 @@ inline uint8_t Stepper::get_axis_id() {
 
 inline void Stepper::finish_move() {
     delta = 0;
+    jogging = false;
     homing_probing = false;
     target_position = position;
 }

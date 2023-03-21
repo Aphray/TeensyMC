@@ -11,10 +11,11 @@
 
 #define STEPPER_STATES(X)   \
     X(IDLE)                 \
-    X(ACTIVE)               \
     X(FAULT)                \
     X(HOMING)               \
     X(PROBING)              \
+    X(JOGGING)              \
+    X(MOVING)               \
     X(HOME_FIRST)           \
 
 
@@ -41,11 +42,17 @@ class _stepper_control {
         // initiate a move with desired speed (in units/sec) and acceleration (in units/sec)
         void start_move(float speed, float accel);
 
-        // home one stepper
+        // start a jog movement with desired speed (in units/sec) and acceleration (in units/sec)
+        void start_jogging(float speed, float accel);
+
+        // stops the jog movement (with deceleration)
+        void stop_jogging();
+
+        // home a stepper
         void start_home(uint8_t axis, float speed, float accel);
         void start_home(Stepper* stepper, float speed, float accel);
 
-        // probe one stepper
+        // probe a stepper
         void start_probe(uint8_t axis, float speed, float accel, int8_t dir);
         void start_probe(Stepper* stepper, float speed, float accel, int8_t dir);
 

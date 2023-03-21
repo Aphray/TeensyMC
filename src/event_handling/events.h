@@ -11,6 +11,9 @@ enum StepperEvents {
     PROBING_STARTED,
     PROBING_COMPLETE,
     PROBING_FAILED,
+
+    JOG_STARTED,
+    JOG_COMPLETE,
     
     FAULT_OCCURED
 };

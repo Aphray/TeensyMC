@@ -62,9 +62,7 @@ void _stepper_control::add_stepper(Stepper& stepper) {
 
 void _stepper_control::start_move(float speed, float accel) {
     if (steppers_active()) { return; }
-    // state = ACTIVE;
-    change_state(ACTIVE);
-    TMCEventManager.trigger_event(MOVE_STARTED);
+    change_state(MOVING);
     run_steppers(speed, accel);
 }
 
@@ -75,9 +73,7 @@ void _stepper_control::start_home(uint8_t axis, float speed, float accel) {
 
 void _stepper_control::start_home(Stepper* stepper, float speed, float accel) {
     if (stepper == nullptr || steppers_active()) { return; }
-    // state = HOMING;
     change_state(HOMING);
-    TMCEventManager.trigger_event(HOMING_STARTED);
     stepper->prepare_homing();
     run_steppers(speed, accel);
 }
@@ -91,9 +87,21 @@ void _stepper_control::start_probe(Stepper* stepper, float speed, float accel, i
     if (stepper == nullptr || steppers_active()) { return; }
     // state = PROBING;
     change_state(PROBING);
-    TMCEventManager.trigger_event(PROBING_STARTED);
     stepper->prepare_probing(dir);
     run_steppers(speed, accel);
+}
+
+void _stepper_control::start_jogging(float* unit_vectors, float speed, float accel) {
+    if (steppers_active()) { return; }
+    change_state(JOGGING);
+    for (uint8_t n = 0; n < num_steppers; n++) {
+        steppers[n]->prepare_jogging(unit_vectors[n]);
+    }
+    run_steppers(speed, accel);
+}
+
+void _stepper_control::stop_jogging() {
+    if (state == JOGGING) { stop(); }
 }
 
 void _stepper_control::zero_stepper(uint8_t axis) {
@@ -115,7 +123,6 @@ void _stepper_control::halt() {
 
     // state = FAULT;
     change_state(FAULT);
-    finish_move();
 }
 
 void _stepper_control::clear_fault() {
@@ -130,7 +137,7 @@ void _stepper_control::clear_fault() {
 }
 
 bool _stepper_control::steppers_active() {
-    return (state == ACTIVE || state == PROBING || state == HOMING);
+    return (state == MOVING || state == PROBING || state == HOMING || state == JOGGING);
 }
 
 bool _stepper_control::steppers_homed() {
@@ -209,7 +216,8 @@ void _stepper_control::step_ISR() {
 
         case PROBING:
         case HOMING:
-        case ACTIVE:
+        case JOGGING:
+        case MOVING:
         {
 
             float period = accelerator.compute_next_step_period();
@@ -268,11 +276,19 @@ void _stepper_control::step_ISR() {
                 }
 
             } else if (master_stepper->move_complete() || (period < 0)) {
+
+                if (state == JOGGING) { 
+                    // jog complete
+                    TMCEventManager.queue_event(JOG_COMPLETE);
+                    TMCMessageAgent.queue_message(INFO, "Jog complete");
+                } else {
+                    // move complete
+                    TMCEventManager.queue_event(MOVE_COMPLETE);
+                    TMCMessageAgent.queue_message(INFO, "Move complete");
+                }
+
                 change_state(IDLE);
                 finish_move();
-                TMCEventManager.queue_event(MOVE_COMPLETE);
-                TMCMessageAgent.queue_message(INFO, "Move complete");
-
             }
 
             pulse_timer.trigger(PULSE_WIDTH_US);
@@ -306,20 +322,24 @@ void _stepper_control::run_steppers(float speed, float accel) {
         stepper++;
     }
 
-    accelerator.prepare(master_stepper->get_delta_steps(), start_speed, speed, accel);
+    accelerator.prepare((state == JOGGING ? std::numeric_limits<uint32_t>::max() : master_stepper->get_delta_steps()), start_speed, speed, accel);
     step_timer.setPeriod(1);
 
     switch (state) {
         case PROBING:
-            TMCEventManager.queue_event(PROBING_STARTED);
+            TMCEventManager.trigger_event(PROBING_STARTED);
             TMCMessageAgent.post_message(INFO, "Probing started on axis %i", master_stepper->get_axis_id());
             break;
         case HOMING:
-            TMCEventManager.queue_event(HOMING_STARTED);
+            TMCEventManager.trigger_event(HOMING_STARTED);
             TMCMessageAgent.post_message(INFO, "Homing started on axis %i", master_stepper->get_axis_id());
             break;
-        case ACTIVE:
-            TMCEventManager.queue_event(MOVE_STARTED);
+        case JOGGING:
+            TMCEventManager.trigger_event(JOG_STARTED);
+            TMCMessageAgent.post_message(INFO, "Jog started");
+            break;
+        case MOVING:
+            TMCEventManager.trigger_event(MOVE_STARTED);
             TMCMessageAgent.post_message(INFO, "Move started");
             break;
     }
