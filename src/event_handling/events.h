@@ -1,6 +1,6 @@
 #pragma once
 
-enum TMCEvents {
+enum StepperEvents {
     MOVE_STARTED,
     MOVE_COMPLETE,
 

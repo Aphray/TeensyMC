@@ -64,6 +64,7 @@ void _stepper_control::start_move(float speed, float accel) {
     if (steppers_active()) { return; }
     // state = ACTIVE;
     change_state(ACTIVE);
+    TMCEventManager.trigger_event(MOVE_STARTED);
     run_steppers(speed, accel);
 }
 
@@ -76,6 +77,7 @@ void _stepper_control::start_home(Stepper* stepper, float speed, float accel) {
     if (stepper == nullptr || steppers_active()) { return; }
     // state = HOMING;
     change_state(HOMING);
+    TMCEventManager.trigger_event(HOMING_STARTED);
     stepper->prepare_homing();
     run_steppers(speed, accel);
 }
@@ -89,6 +91,7 @@ void _stepper_control::start_probe(Stepper* stepper, float speed, float accel, i
     if (stepper == nullptr || steppers_active()) { return; }
     // state = PROBING;
     change_state(PROBING);
+    TMCEventManager.trigger_event(PROBING_STARTED);
     stepper->prepare_probing(dir);
     run_steppers(speed, accel);
 }

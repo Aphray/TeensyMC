@@ -9,7 +9,7 @@
 
 
 struct _event_callback {
-    TMCEvents event;
+    StepperEvents event;
     void (*callback)();
 };
 
@@ -20,18 +20,22 @@ class _event_manager {
         
         _event_manager();
 
-        void process_events();
+        void process_queued_events();
 
-        void queue_event(TMCEvents event);
+        void queue_event(StepperEvents event);
 
-        void attach_callback(TMCEvents event, void (*callback)());
+        void trigger_event(StepperEvents event);
+
+        void attach_callback(StepperEvents event, void (*callback)());
 
     private:
 
         uint8_t num_callbacks;
 
-        std::queue<TMCEvents> event_queue;
+        std::queue<StepperEvents> event_queue;
         _event_callback callbacks[MAX_EVENT_CALLBACKS];
+
+        void run_event_callbacks(StepperEvents event);
 };
 
 

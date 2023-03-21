@@ -33,7 +33,7 @@ void TMC_Begin() {
 }
 
 void TMC_Run() {
-    TMCEventManager.process_events();
+    TMCEventManager.process_queued_events();
 
     TMCSerialCommand.poll();
     TMCMessageAgent.post_queued_messages();
