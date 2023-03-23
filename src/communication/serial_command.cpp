@@ -135,7 +135,8 @@ void _serial_command::poll() {
 }
 
 void _serial_command::process_command_queue() {
-    if (TMCStepperControl.steppers_active() || TMCStepperControl.steppers_holding() || cmd_queue.empty()) return;
+    // if (TMCStepperControl.steppers_active() || TMCStepperControl.steppers_holding() || cmd_queue.empty()) return;
+    if (!TMCStepperControl.check_state(IDLE, HOME_FIRST) || cmd_queue.empty()) return;
 
     _command* cmd = cmd_queue.pop();
     run_cmd(cmd);
