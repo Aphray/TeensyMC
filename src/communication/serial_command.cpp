@@ -96,6 +96,13 @@ uint8_t ArgList::get_num_args() {
     return num_args;
 }
 
+void ArgList::copy(ArgList* arg_list) {
+    num_args = arg_list->num_args;
+    for (uint8_t n = 0; n < num_args; n++) {
+        strcpy(args[n], arg_list->args[n]);
+    }
+}
+
 _serial_command::_serial_command(Stream* stream_) {
     n_cmds = 0;
     stream = stream_;
@@ -200,12 +207,11 @@ void _serial_command::parse(char* data) {
 
             // check if the argument count matches
             if (arg_list.get_num_args() == n_args) {
-                cmd->args = arg_list;
+                cmd->args.copy(&arg_list);
                 
                 if (!cmd->queue) {
                     run_cmd(cmd);
                 } else if (!cmd_queue.full()) {
-                    cmd->args = arg_list;
                     cmd_queue.push(cmd);
 
                     if (cmd_queue.full()) {
