@@ -22,7 +22,7 @@ enum MessageLevel {
 struct _message {
     char buffer[MESSAGE_BUFFER_SIZE];
 
-    _message();
+    _message() = default;
 
     template<typename... Args>
     _message(MessageLevel level, char* format, Args... args) {
