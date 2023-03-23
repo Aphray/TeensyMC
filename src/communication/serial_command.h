@@ -45,35 +45,18 @@ class ArgList {
 
 typedef void (*CommandCallback)(char*, ArgList*);
 
-class _command {
-    public:
-        
 
-    private:
-        uint8_t num_static_args;
-        uint8_t* num_dynamic_args;
+struct _command {
+    char name[CMD_CHAR_MAX + 1];
 
-        char command_name[CMD_CHAR_MAX + 1];
+    bool queue;
 
-        CommandCallback callbacks[MAX_USER_CALLBACKS];
-};
+    uint8_t n_args;
+    uint8_t* n_var_args;
+    uint8_t n_callbacks;
 
-
-struct _user_command {
-    uint8_t num_cbs;
-    uint8_t static_args;
-    uint8_t* dynamic_args;
-
-    bool emergency;
-
-    char cmd[CMD_CHAR_MAX + 1];
-
+    ArgList args;
     CommandCallback callbacks[MAX_USER_CALLBACKS];
-};
-
-
-struct _rx_command {
-    char buffer[RX_BUFFER_SIZE];
 };
 
 
@@ -89,7 +72,10 @@ class _serial_command {
         void process_command_queue();
 
         // add a user-defined command and callback that can be executed via serial commands
-        void register_command(char* cmd, uint8_t static_args, uint8_t* dynamic_args = nullptr);
+        void register_command(char* cmd, uint8_t static_args);
+        void register_command(char* cmd, uint8_t static_args, bool queue);
+        void register_command(char* cmd, uint8_t static_args, uint8_t* dynamic_args);
+        void register_command(char* cmd, uint8_t static_args, bool queue, uint8_t* dynamic_args);
 
         // attach callback to the specified command
         void add_callback(char* cmd, CommandCallback callback);
@@ -97,19 +83,17 @@ class _serial_command {
     private:
         Stream* stream;
 
-        uint8_t num_user_cmds;
-        _user_command user_cmds[MAX_USER_COMMANDS];
-        FixedQueue<_user_command, CMD_QUEUE_SIZE> cmd_queue;
+        uint8_t n_cmds;
+        _command cmd_registry[MAX_USER_COMMANDS];
+        FixedQueue<_command*, CMD_QUEUE_SIZE> cmd_queue;
 
         char rx_buffer[RX_BUFFER_SIZE];
-
-        bool queue_paused;
 
         // parse the recieved data and execute any attached commands
         void parse(char* data);
 
         // runs the command with the arguments
-        void run_cmd(_user_command* user_cmd, ArgList args);
+        void run_cmd(_command* cmd);
 };
 
 extern _serial_command TMCSerialCommand;

@@ -1,4 +1,5 @@
 #include "serial_command.h"
+#include "../stepper_control/stepper_control.h"
 
 #define STR_CMP(a, b) (strcmp(a, b) == 0)
 
@@ -96,9 +97,8 @@ uint8_t ArgList::get_num_args() {
 }
 
 _serial_command::_serial_command(Stream* stream_) {
-    num_user_cmds = 0;
+    n_cmds = 0;
     stream = stream_;
-    queue_paused = false;
 }
 
 void _serial_command::poll() {
@@ -128,100 +128,124 @@ void _serial_command::poll() {
 }
 
 void _serial_command::process_command_queue() {
-    if (queue_paused || cmd_queue.empty()) return;
+    if (TMCStepperControl.steppers_active() || cmd_queue.empty()) return;
 
-    _user_command cmd = cmd_queue.front();
+    _command* cmd = cmd_queue.pop();
+    run_cmd(cmd);
 }
 
+void _serial_command::register_command(char* cmd, uint8_t static_args) {
+    register_command(cmd, static_args, true, nullptr);
+}
 
-void _serial_command::register_command(char* cmd, uint8_t static_args, uint8_t* dynamic_args = nullptr) {
+void _serial_command::register_command(char* cmd, uint8_t static_args, bool queue) {
+    register_command(cmd, static_args, queue, nullptr);
+}
+
+void _serial_command::register_command(char* cmd, uint8_t static_args, uint8_t* dynamic_args) {
+    register_command(cmd, static_args, true, dynamic_args);
+}
+
+void _serial_command::register_command(char* cmd_name, uint8_t static_args, bool queue, uint8_t* dynamic_args) {
     // checks
-    if (strlen(cmd) > CMD_CHAR_MAX) return;
-    if (num_user_cmds == MAX_USER_COMMANDS) return;
+    if (strlen(cmd_name) > CMD_CHAR_MAX) return;
+    if (n_cmds == MAX_USER_COMMANDS) return;
 
     // check to see if the command exists
-    for (uint8_t n = 0; n < num_user_cmds; n ++) {
-        // do nothing if the command already exists
-        if (STR_CMP(cmd, user_cmds[n].cmd)) { 
-            TMCMessageAgent.post_message(ERROR, "Command <%s> already registered", cmd);
+    for (uint8_t n = 0; n < n_cmds; n ++) {
+
+        if (STR_CMP(cmd_name, cmd_registry[n].name)) { 
+            // if command exists, report an error and return
+            TMCMessageAgent.post_message(ERROR, "Command <%s> already registered", cmd_name);
             return; 
         }
     }
 
-    // build the command if it doesn't already exist
-    _user_command* command = &user_cmds[num_user_cmds++];
-    command->static_args = static_args;
-    command->dynamic_args = dynamic_args;
-    strcpy(command->cmd, cmd);
+    // register the command when it doesn't exist in the registry
+    _command* reg_cmd = &cmd_registry[n_cmds++];
+
+    strcpy(reg_cmd->name, cmd_name);
+    reg_cmd->queue = queue;
+    reg_cmd->n_args = static_args;
+    reg_cmd->n_var_args = dynamic_args;
 }
 
 
-void _serial_command::add_callback(char* cmd, CommandCallback callback) {
+void _serial_command::add_callback(char* cmd_name, CommandCallback callback) {
     // check to see if the command is exists
-    for (uint8_t n = 0; n < num_user_cmds; n ++) {
-        _user_command* command = &user_cmds[n];
+    for (uint8_t n = 0; n < n_cmds; n ++) {
+        // _user_command* command = &user_cmds[n];
+        _command* reg_cmd = &(cmd_registry[n]);
 
-        if (STR_CMP(cmd, command->cmd)) {
-            if (command->num_cbs == MAX_USER_CALLBACKS) { 
-                TMCMessageAgent.post_message(ERROR, "Command <%s> reached user callback limit (%i)", cmd, MAX_USER_CALLBACKS);
+        if (STR_CMP(cmd_name, reg_cmd->name)) {
+            if (reg_cmd->n_callbacks == MAX_USER_CALLBACKS) { 
+                TMCMessageAgent.post_message(ERROR, "Command <%s> reached user callback limit (%i)", cmd_name, MAX_USER_CALLBACKS);
                 return; 
             }
 
             // add the new callback to the callbacks list
-            command->callbacks[command->num_cbs++] = callback;
+            reg_cmd->callbacks[reg_cmd->n_callbacks++] = callback;
             return;
         }
     }
 
     // command wasn't found...
-    TMCMessageAgent.post_message(ERROR, "Command <%s> unrecognized; register command before adding callbacks", cmd);
+    TMCMessageAgent.post_message(ERROR, "Command <%s> unrecognized; register command before adding callbacks", cmd_name);
 }
 
 
 void _serial_command::parse(char* data) {
     // get the command and make the arguments list
-    char* cmd = strtok(data, CMD_DELIMITER);
+    char* cmd_name = strtok(data, CMD_DELIMITER);
     ArgList arg_list(strtok(NULL, CMD_DELIMITER));
 
     // loop through all the stored commands
-    for (uint8_t n = 0; n < num_user_cmds; n++) {
-        _user_command* user_cmd = &user_cmds[n];
+    for (uint8_t n = 0; n < n_cmds; n++) {
+        _command* cmd = &(cmd_registry[n]);
 
         // check if the parsed command matches a stored command
-        if (STR_CMP(cmd, user_cmd->cmd)) {
+        if (STR_CMP(cmd_name, cmd->name)) {
 
             // number of arguments needed
-            uint8_t args_needed = (user_cmd->dynamic_args != nullptr) ? *(user_cmd->dynamic_args) + user_cmd->static_args : user_cmd->static_args;
+            uint8_t n_args = (cmd->n_var_args != nullptr) ? *(cmd->n_var_args) + cmd->n_args : cmd->n_args;
 
             // check if the argument count matches
-            if (arg_list.get_num_args() == args_needed) {
+            if (arg_list.get_num_args() == n_args) {
+                cmd->args = arg_list;
                 
-                if (user_cmd->emergency) {
-                    run_cmd(user_cmd, arg_list);
-                } else if (cmd_queue.space_available()) {
-                    cmd_queue.push(*user_cmd);
-                    TMCMessageAgent.post_message(INFO, "Command queue: %i / %i", cmd_queue.size(), cmd_queue.max_size());
+                if (!cmd->queue) {
+                    run_cmd(cmd);
+                } else if (!cmd_queue.full()) {
+                    cmd->args = arg_list;
+                    cmd_queue.push(cmd);
+
+                    if (cmd_queue.full()) {
+                        TMCMessageAgent.post_message(INFO, "Command queue: full");
+                    } else {
+                        TMCMessageAgent.post_message(INFO, "Command queue: %i available", cmd_queue.available());
+                    }
+
                 } else {
-                    TMCMessageAgent.post_message(ERROR, "Command queue is full");
+                    TMCMessageAgent.post_message(ERROR, "Cannot queue cmd <%s>; command queue is full", data);
                 }
                 
             } else {
                 // post error about argument mismatch
                 TMCMessageAgent.post_message(ERROR, "Command <%s> requires (exactly) %i arg%s, but given %i", 
-                        cmd, args_needed, ((args_needed > 1) ? "s" : ""), arg_list.get_num_args());
+                        cmd_name, n_args, ((n_args > 1) ? "s" : ""), arg_list.get_num_args());
             }
             return;
         }
     }
     
     // command wasn't found...
-    TMCMessageAgent.post_message(ERROR, "Command <%s> unrecognized", cmd);
+    TMCMessageAgent.post_message(ERROR, "Command <%s> unrecognized", cmd_name);
 }
 
-void _serial_command::run_cmd(_user_command* user_cmd, ArgList arg_list) {
+void _serial_command::run_cmd(_command* cmd) {
     // execute the callbacks and pass the arguments
-    for (uint8_t i = 0; i < user_cmd->num_cbs; i ++) {
-        (*user_cmd->callbacks[i])(user_cmd->cmd, &arg_list);
-        arg_list.reset();
+    for (uint8_t i = 0; i < cmd->n_callbacks; i ++) {
+        (*cmd->callbacks[i])(cmd->name, &cmd->args);
+        cmd->args.reset();
     }
 }

@@ -43,7 +43,7 @@ class _stepper_control {
         void start_move(float speed, float accel);
 
         // start a jog movement with desired speed (in units/sec) and acceleration (in units/sec)
-        void start_jogging(float speed, float accel);
+        void start_jogging(float* unit_vectors, float speed, float accel);
 
         // stops the jog movement (with deceleration)
         void stop_jogging();
