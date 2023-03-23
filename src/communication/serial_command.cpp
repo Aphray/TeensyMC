@@ -134,19 +134,19 @@ void _serial_command::process_command_queue() {
     run_cmd(cmd);
 }
 
-void _serial_command::register_command(char* cmd, uint8_t static_args) {
-    register_command(cmd, static_args, true, nullptr);
+void _serial_command::register_command(char* cmd_name, uint8_t args) {
+    register_command(cmd_name, args, true, nullptr);
 }
 
-void _serial_command::register_command(char* cmd, uint8_t static_args, bool queue) {
-    register_command(cmd, static_args, queue, nullptr);
+void _serial_command::register_command(char* cmd_name, uint8_t args, bool queue) {
+    register_command(cmd_name, args, queue, nullptr);
 }
 
-void _serial_command::register_command(char* cmd, uint8_t static_args, uint8_t* dynamic_args) {
-    register_command(cmd, static_args, true, dynamic_args);
+void _serial_command::register_command(char* cmd_name, uint8_t args, uint8_t* variable_args) {
+    register_command(cmd_name, args, true, variable_args);
 }
 
-void _serial_command::register_command(char* cmd_name, uint8_t static_args, bool queue, uint8_t* dynamic_args) {
+void _serial_command::register_command(char* cmd_name, uint8_t args, bool queue, uint8_t* variable_args) {
     // checks
     if (strlen(cmd_name) > CMD_CHAR_MAX) return;
     if (n_cmds == MAX_USER_COMMANDS) return;
@@ -166,8 +166,8 @@ void _serial_command::register_command(char* cmd_name, uint8_t static_args, bool
 
     strcpy(reg_cmd->name, cmd_name);
     reg_cmd->queue = queue;
-    reg_cmd->n_args = static_args;
-    reg_cmd->n_var_args = dynamic_args;
+    reg_cmd->n_args = args;
+    reg_cmd->n_var_args = variable_args;
 }
 
 
