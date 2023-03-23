@@ -98,6 +98,12 @@ class _stepper_control {
         // returns the speed (in steps/sec) of the accelerator
         float get_accelerator_speed();
 
+        // check steppers state
+        bool check_state(StepperState state);
+
+        template<typename... StepperStates>
+        bool check_state(StepperStates... states);
+
         // returns the stepper count
         uint8_t get_num_steppers();
 
@@ -201,6 +207,18 @@ inline void _stepper_control::change_state(StepperState new_state) {
 
 inline void _stepper_control::restore_state() {
     state = prev_state;
+}
+
+inline bool _stepper_control::check_state(StepperState state) {
+    return state == this->state;
+}
+
+template<typename... StepperStates>
+bool _stepper_control::check_state(StepperStates... states) {
+    for (StepperState state: {states...}) {
+        if (check_state(state)) return true;
+    }
+    return false;
 }
 
 extern _stepper_control TMCStepperControl;
