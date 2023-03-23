@@ -2,8 +2,11 @@
 
 #include <Arduino.h>
 #include <Stream.h>
+#include <queue>
+
 #include "message_agent.h"
 #include "../config.h"
+#include "../utility/fixed_queue.h"
 
 #define CALLBACK(name) void name##__cb(char* cmd, ArgList* args)
 
@@ -42,15 +45,35 @@ class ArgList {
 
 typedef void (*CommandCallback)(char*, ArgList*);
 
+class _command {
+    public:
+        
+
+    private:
+        uint8_t num_static_args;
+        uint8_t* num_dynamic_args;
+
+        char command_name[CMD_CHAR_MAX + 1];
+
+        CommandCallback callbacks[MAX_USER_CALLBACKS];
+};
+
 
 struct _user_command {
     uint8_t num_cbs;
     uint8_t static_args;
     uint8_t* dynamic_args;
 
+    bool emergency;
+
     char cmd[CMD_CHAR_MAX + 1];
 
     CommandCallback callbacks[MAX_USER_CALLBACKS];
+};
+
+
+struct _rx_command {
+    char buffer[RX_BUFFER_SIZE];
 };
 
 
@@ -62,10 +85,11 @@ class _serial_command {
         // poll the stream for incoming data
         void poll();
 
+        // run any commands sitting in the queue
+        void process_command_queue();
+
         // add a user-defined command and callback that can be executed via serial commands
         void register_command(char* cmd, uint8_t static_args, uint8_t* dynamic_args = nullptr);
-
-        // void register_command_dynamic(char* cmd, uint8_t* num_args);
 
         // attach callback to the specified command
         void add_callback(char* cmd, CommandCallback callback);
@@ -73,13 +97,19 @@ class _serial_command {
     private:
         Stream* stream;
 
-        uint8_t num_cmds;
-        _user_command commands[MAX_USER_COMMANDS];
+        uint8_t num_user_cmds;
+        _user_command user_cmds[MAX_USER_COMMANDS];
+        FixedQueue<_user_command, CMD_QUEUE_SIZE> cmd_queue;
 
         char rx_buffer[RX_BUFFER_SIZE];
 
+        bool queue_paused;
+
         // parse the recieved data and execute any attached commands
         void parse(char* data);
+
+        // runs the command with the arguments
+        void run_cmd(_user_command* user_cmd, ArgList args);
 };
 
 extern _serial_command TMCSerialCommand;

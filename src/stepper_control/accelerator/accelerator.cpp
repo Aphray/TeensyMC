@@ -47,7 +47,7 @@ float _accelerator::compute_next_step_period() {
 
     if (current_step < accel_stop) {
         // acceleration period
-        #if(SIN_CURVE_ACCELERATION)
+        #ifdef SIN_CURVE_ACCELERATION
         current_speed = interp_scurve(current_step);
         #else
         current_speed = interpf(0, initial_speed, accel_stop, target_speed, current_step);
@@ -59,7 +59,7 @@ float _accelerator::compute_next_step_period() {
 
     } else if (current_step < total_steps) {
         // deceleration period
-        #if(SIN_CURVE_ACCELERATION)
+        #ifdef SIN_CURVE_ACCELERATION
         current_speed = interp_scurve(total_steps - current_step - 1);
         #else
         current_speed = interpf(0, initial_speed, accel_stop, target_speed, total_steps - current_step - 1);

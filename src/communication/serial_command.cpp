@@ -96,8 +96,9 @@ uint8_t ArgList::get_num_args() {
 }
 
 _serial_command::_serial_command(Stream* stream_) {
-    num_cmds = 0;
+    num_user_cmds = 0;
     stream = stream_;
+    queue_paused = false;
 }
 
 void _serial_command::poll() {
@@ -126,23 +127,29 @@ void _serial_command::poll() {
     }
 }
 
+void _serial_command::process_command_queue() {
+    if (queue_paused || cmd_queue.empty()) return;
+
+    _user_command cmd = cmd_queue.front();
+}
+
 
 void _serial_command::register_command(char* cmd, uint8_t static_args, uint8_t* dynamic_args = nullptr) {
     // checks
-    if (strlen(cmd) > CMD_CHAR_MAX) { return; }
-    if (num_cmds == MAX_USER_COMMANDS) { return; }
+    if (strlen(cmd) > CMD_CHAR_MAX) return;
+    if (num_user_cmds == MAX_USER_COMMANDS) return;
 
     // check to see if the command exists
-    for (uint8_t n = 0; n < num_cmds; n ++) {
+    for (uint8_t n = 0; n < num_user_cmds; n ++) {
         // do nothing if the command already exists
-        if (STR_CMP(cmd, commands[n].cmd)) { 
+        if (STR_CMP(cmd, user_cmds[n].cmd)) { 
             TMCMessageAgent.post_message(ERROR, "Command <%s> already registered", cmd);
             return; 
         }
     }
 
     // build the command if it doesn't already exist
-    _user_command* command = &commands[num_cmds++];
+    _user_command* command = &user_cmds[num_user_cmds++];
     command->static_args = static_args;
     command->dynamic_args = dynamic_args;
     strcpy(command->cmd, cmd);
@@ -151,8 +158,8 @@ void _serial_command::register_command(char* cmd, uint8_t static_args, uint8_t* 
 
 void _serial_command::add_callback(char* cmd, CommandCallback callback) {
     // check to see if the command is exists
-    for (uint8_t n = 0; n < num_cmds; n ++) {
-        _user_command* command = &commands[n];
+    for (uint8_t n = 0; n < num_user_cmds; n ++) {
+        _user_command* command = &user_cmds[n];
 
         if (STR_CMP(cmd, command->cmd)) {
             if (command->num_cbs == MAX_USER_CALLBACKS) { 
@@ -177,22 +184,25 @@ void _serial_command::parse(char* data) {
     ArgList arg_list(strtok(NULL, CMD_DELIMITER));
 
     // loop through all the stored commands
-    for (uint8_t n = 0; n < num_cmds; n++) {
-        _user_command* command = &commands[n];
+    for (uint8_t n = 0; n < num_user_cmds; n++) {
+        _user_command* user_cmd = &user_cmds[n];
 
-        // check if the parsed command matches the stored command
-        if (STR_CMP(cmd, command->cmd)) {
+        // check if the parsed command matches a stored command
+        if (STR_CMP(cmd, user_cmd->cmd)) {
 
             // number of arguments needed
-            uint8_t args_needed = (command->dynamic_args != nullptr) ? *(command->dynamic_args) + command->static_args : command->static_args;
+            uint8_t args_needed = (user_cmd->dynamic_args != nullptr) ? *(user_cmd->dynamic_args) + user_cmd->static_args : user_cmd->static_args;
 
             // check if the argument count matches
             if (arg_list.get_num_args() == args_needed) {
                 
-                // execute the callbacks and pass the arguments
-                for (uint8_t i = 0; i < command->num_cbs; i ++) {
-                    (*command->callbacks[i])(cmd, &arg_list);
-                    arg_list.reset();
+                if (user_cmd->emergency) {
+                    run_cmd(user_cmd, arg_list);
+                } else if (cmd_queue.space_available()) {
+                    cmd_queue.push(*user_cmd);
+                    TMCMessageAgent.post_message(INFO, "Command queue: %i / %i", cmd_queue.size(), cmd_queue.max_size());
+                } else {
+                    TMCMessageAgent.post_message(ERROR, "Command queue is full");
                 }
                 
             } else {
@@ -206,4 +216,12 @@ void _serial_command::parse(char* data) {
     
     // command wasn't found...
     TMCMessageAgent.post_message(ERROR, "Command <%s> unrecognized", cmd);
+}
+
+void _serial_command::run_cmd(_user_command* user_cmd, ArgList arg_list) {
+    // execute the callbacks and pass the arguments
+    for (uint8_t i = 0; i < user_cmd->num_cbs; i ++) {
+        (*user_cmd->callbacks[i])(user_cmd->cmd, &arg_list);
+        arg_list.reset();
+    }
 }
