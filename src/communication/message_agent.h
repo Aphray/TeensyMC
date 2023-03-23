@@ -22,6 +22,8 @@ enum MessageLevel {
 struct _message {
     char buffer[MESSAGE_BUFFER_SIZE];
 
+    _message();
+
     template<typename... Args>
     _message(MessageLevel level, char* format, Args... args) {
         static const char* const MESSAGE_LEVEL_STRINGS[] = { MESSAGE_LEVELS(MAKE_STRINGS) };
