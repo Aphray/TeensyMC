@@ -3,34 +3,40 @@
 #include "../communication/serial_command.h"
 
 // enable stepper command
-CALLBACK(EN);
+CALLBACK(ENABL);
 
 // move command
-CALLBACK(MVE);
+CALLBACK(MOVE);
 
 // probe command
-CALLBACK(PRB);
+CALLBACK(PROBE);
 
 // home command
-CALLBACK(HME);
+CALLBACK(HOME);
 
 // clear fault command
-CALLBACK(FLT);
+CALLBACK(CFAULT);
 
 // set zero command
-CALLBACK(ZRO);
+CALLBACK(ZERO);
 
 // controlled stop command
-CALLBACK(STP);
+CALLBACK(STOP);
 
 // halt/e-stop command
-CALLBACK(HLT);
+CALLBACK(HALT);
 
 // set limits command
-CALLBACK(LIM);
+CALLBACK(LIMIT);
 
-// jog begin
-CALLBACK(JOGB);
+// jog begin command
+CALLBACK(JOG);
 
-// jog cancel
+// jog cancel command
 CALLBACK(JOGC);
+
+// hold command
+CALLBACK(HOLD);
+
+// hold cancel/clear command
+CALLBACK(HOLDC);

@@ -13,7 +13,7 @@ inline void CHECK_HOMED(char* cmd) {
     if (!TMCStepperControl.steppers_homed()) { TMCMessageAgent.post_message(ERROR, "Command <%s> cannot run; steppers not homed", cmd); }
 }
 
-CALLBACK(EN) {
+CALLBACK(ENABL) {
     // enable command
 
     char* ax_c = args->next();
@@ -42,7 +42,7 @@ CALLBACK(EN) {
 }
 
 
-CALLBACK(MVE) {
+CALLBACK(MOVE) {
     // move command
 
     CHECK_ACTIVE(cmd);
@@ -100,7 +100,7 @@ CALLBACK(MVE) {
     TMCStepperControl.start_move(speed_f, accel_f);
 }
 
-CALLBACK(PRB) {
+CALLBACK(PROBE) {
     // probe command
     
     CHECK_ACTIVE(cmd);
@@ -138,7 +138,7 @@ CALLBACK(PRB) {
     TMCStepperControl.start_probe(ax_i, speed_f, accel_f, dir_i);
 }
 
-CALLBACK(HME) {
+CALLBACK(HOME) {
     // home command
     CHECK_ACTIVE(cmd);
 
@@ -167,7 +167,7 @@ CALLBACK(HME) {
     TMCStepperControl.start_home(ax_i, speed_f, accel_f);
 }
 
-CALLBACK(FLT) {
+CALLBACK(CFAULT) {
     // clear fault command
 
     CHECK_ACTIVE(cmd);
@@ -175,7 +175,7 @@ CALLBACK(FLT) {
     TMCStepperControl.clear_fault();
 }
 
-CALLBACK(ZRO) {
+CALLBACK(ZERO) {
     // set zero command
 
     CHECK_ACTIVE(cmd);
@@ -191,19 +191,19 @@ CALLBACK(ZRO) {
     TMCStepperControl.zero_stepper(ax_i);
 }
 
-CALLBACK(STP) {
+CALLBACK(STOP) {
     // stop (controlled w/ deceleration) command
 
     TMCStepperControl.stop();
 }
 
-CALLBACK(HLT) {
+CALLBACK(HALT) {
     // halt/e-stop command
 
     TMCStepperControl.halt();
 }
 
-CALLBACK(LIM) {
+CALLBACK(LIMIT) {
     // set limits command
 
     char* ax_c = args->next();
@@ -258,7 +258,7 @@ CALLBACK(LIM) {
     }
 }
 
-CALLBACK(JOGB) {
+CALLBACK(JOG) {
     // jog begin command
 
     CHECK_ACTIVE(cmd);
@@ -310,4 +310,22 @@ CALLBACK(JOGB) {
 
 CALLBACK(JOGC) {
     TMCStepperControl.stop_jogging();
+}
+
+
+CALLBACK(HOLD) {
+    char* ms_c = args->next();
+    int ms_i = 0;
+    
+    if (!argtoi(ms_c, &ms_i) || ms_i <= 0) {
+        ARG_ERROR(ms_c);
+        return;
+    }
+
+    TMCStepperControl.hold(ms_i);
+}
+
+
+CALLBACK(HOLDC) {
+    TMCStepperControl.clear_hold();
 }

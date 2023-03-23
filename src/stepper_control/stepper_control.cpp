@@ -25,24 +25,35 @@ void _stepper_control::begin() {
     hold_timer.begin([this] {this->hold_ISR(); }, 1000, false);
 
     // add the serial commands
-    TMCSerialCommand.register_command("EN", 2, false);
-    TMCSerialCommand.register_command("MVE", 2, &num_steppers);
-    TMCSerialCommand.register_command("PRB", 4);
-    TMCSerialCommand.register_command("HME", 3);
-    TMCSerialCommand.register_command("LIM", 3);
-    TMCSerialCommand.register_command("STP", 0, false);
-    TMCSerialCommand.register_command("HLT", 0, false);
-    TMCSerialCommand.register_command("FLT", 0);
+    TMCSerialCommand.register_command("ENABL", 2, false);
+    TMCSerialCommand.register_command("MOVE", 2, &num_steppers);
+    TMCSerialCommand.register_command("PROBE", 4);
+    TMCSerialCommand.register_command("HOME", 3);
+    TMCSerialCommand.register_command("FAULT", 0, false);
+    TMCSerialCommand.register_command("ZERO", 0);
+    TMCSerialCommand.register_command("STOP", 0, false);
+    TMCSerialCommand.register_command("HALT", 0, false);
+    TMCSerialCommand.register_command("LIMIT", 3);
+    TMCSerialCommand.register_command("JOG", 2, &num_steppers);
+    TMCSerialCommand.register_command("JOGC", 0, false);
+    TMCSerialCommand.register_command("HOLD", 1);
+    TMCSerialCommand.register_command("HOLDC", 0, false);
+   
 
     // attach callbacks
-    TMCSerialCommand.add_callback("EN", &EN__cb);
-    TMCSerialCommand.add_callback("MVE", &MVE__cb);
-    TMCSerialCommand.add_callback("PRB", &PRB__cb);
-    TMCSerialCommand.add_callback("HME", &HME__cb);
-    TMCSerialCommand.add_callback("LIM", &LIM__cb);
-    TMCSerialCommand.add_callback("STP", &STP__cb);
-    TMCSerialCommand.add_callback("HLT", &HLT__cb);
-    TMCSerialCommand.add_callback("FLT", &FLT__cb);
+    TMCSerialCommand.add_callback("ENABL", &ENABL__cb);
+    TMCSerialCommand.add_callback("MOVE", &MOVE__cb);
+    TMCSerialCommand.add_callback("PROBE", &PROBE__cb);
+    TMCSerialCommand.add_callback("HOME", &HOME__cb);
+    TMCSerialCommand.add_callback("FAULT", &CFAULT__cb);
+    TMCSerialCommand.add_callback("ZERO", &ZERO__cb);
+    TMCSerialCommand.add_callback("STOP", &STOP__cb);
+    TMCSerialCommand.add_callback("HALT", &HALT__cb);
+    TMCSerialCommand.add_callback("LIMIT", &LIMIT__cb);
+    TMCSerialCommand.add_callback("JOG", &JOG__cb);
+    TMCSerialCommand.add_callback("JOGC", &JOGC__cb);
+    TMCSerialCommand.add_callback("HOLD", &HOLD__cb);
+    TMCSerialCommand.add_callback("HOLDC", &HOLDC__cb);
 }
 
 
@@ -69,7 +80,7 @@ void _stepper_control::start_move(float speed, float accel) {
 }
 
 void _stepper_control::start_home(uint8_t axis, float speed, float accel) {
-    if (axis > num_steppers) { return; }
+    if (axis > num_steppers) return;
     _stepper_control::start_home(steppers[axis], speed, accel);
 }
 
@@ -176,12 +187,25 @@ void _stepper_control::post_steppers_status(bool queue = false) {
     char message[MESSAGE_BUFFER_SIZE];
     sprintf(message, "(%s)", STEPPER_STATE_STRINGS[state]);
 
-    Stepper** stepper = steppers;
-    while (*stepper) {
-        sprintf(message + strlen(message), " AX%i:(%f,%f)", 
-            (*stepper)->get_axis_id(), (*stepper)->get_position(), (*stepper)->get_speed());
+    if (state == HOLDING) {
 
-        stepper++;
+        uint32_t msec = hold_ms;
+
+        uint8_t sec = msec / 1000;
+        msec %= 1000;
+        uint16_t min = sec / 60;
+        sec %= 60;
+
+        sprintf(message + strlen(message), "Hold: %i:%i:%i (M:S:MS)", min, sec, msec);
+
+    } else {
+        Stepper** stepper = steppers;
+        while (*stepper) {
+            sprintf(message + strlen(message), " AX%i:(%f,%f)", 
+                (*stepper)->get_axis_id(), (*stepper)->get_position(), (*stepper)->get_speed());
+
+            stepper++;
+        }
     }
 
     if (queue) { 
