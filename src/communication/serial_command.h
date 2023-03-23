@@ -21,7 +21,7 @@ bool argtof(char* arg, float* res);
 
 class ArgList {
     public:
-        ArgList();
+        ArgList() {};
         ArgList(char* args);
 
         // get the next argument in the list
