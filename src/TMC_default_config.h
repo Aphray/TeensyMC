@@ -12,6 +12,9 @@
 // report period when steppers idle
 #define IDLE_REPORT_MILLIS 500
 
+// report period when in hold condition
+#define HOLD_REPORT_MILLIS 250
+
 // buffer size for the serial RX data
 #define RX_BUFFER_SIZE 1024
 

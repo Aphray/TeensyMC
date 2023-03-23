@@ -15,7 +15,13 @@ _event_manager TMCEventManager = _event_manager();
 void post_realtime_status() {
     static uint32_t last_millis = 0;
 
-    uint32_t period = TMCStepperControl.steppers_active() ? ACTIVE_REPORT_MILLIS : IDLE_REPORT_MILLIS;
+    uint32_t period = IDLE_REPORT_MILLIS;
+    
+    if (TMCStepperControl.steppers_active()) {
+        period = ACTIVE_REPORT_MILLIS;
+    } else if (TMCStepperControl.steppers_holding()) {
+        period = HOLD_REPORT_MILLIS;
+    }
 
     if ((millis() - last_millis) >= period) {
         TMCStepperControl.post_steppers_status(); 
