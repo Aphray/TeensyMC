@@ -189,6 +189,9 @@ void _serial_command::add_callback(char* cmd_name, CommandCallback callback) {
     TMCMessageAgent.post_message(ERROR, "Command <%s> unrecognized; register command before adding callbacks", cmd_name);
 }
 
+void _serial_command::clear_queue() {
+    cmd_queue.clear();
+}
 
 void _serial_command::parse(char* data) {
     // get the command and make the arguments list

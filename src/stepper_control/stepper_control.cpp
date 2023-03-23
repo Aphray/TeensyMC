@@ -246,6 +246,7 @@ void _stepper_control::step_ISR() {
             if (!do_bresenham_step()) {
                 change_state(FAULT);
                 finish_move();
+                TMCSerialCommand.clear_queue();
                 TMCEventManager.queue_event(FAULT_OCCURED);
                 TMCMessageAgent.queue_message(CRITICAL, "Fault: axis %i", fault_stepper->get_axis_id());
 
@@ -265,6 +266,7 @@ void _stepper_control::step_ISR() {
                         // homing failure
                         change_state(FAULT);
                         finish_move();
+                        TMCSerialCommand.clear_queue();
                         TMCEventManager.queue_event(HOMING_FAILED);
                         TMCMessageAgent.queue_message(CRITICAL, "Homing: failed on axis %i", master_stepper->get_axis_id());
                         break;
@@ -287,6 +289,7 @@ void _stepper_control::step_ISR() {
                         // probing failure
                         change_state(FAULT);
                         finish_move();
+                        TMCSerialCommand.clear_queue();
                         TMCEventManager.queue_event(PROBING_FAILED);
                         TMCMessageAgent.queue_message(CRITICAL, "Probing: failed on axis %i", master_stepper->get_axis_id());
                         break;

@@ -81,6 +81,9 @@ class _serial_command {
         // attach callback to the specified command
         void add_callback(char* cmd_name, CommandCallback callback);
 
+        // clears the command queue
+        void clear_queue();
+
     private:
         Stream* stream;
 
