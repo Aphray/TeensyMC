@@ -28,3 +28,9 @@ CALLBACK(HLT);
 
 // set limits command
 CALLBACK(LIM);
+
+// jog begin
+CALLBACK(JOGB);
+
+// jog cancel
+CALLBACK(JOGC);

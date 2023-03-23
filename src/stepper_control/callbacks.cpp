@@ -308,6 +308,6 @@ CALLBACK(JOGB) {
 }
 
 
-CALLBACK(JOBC) {
+CALLBACK(JOGC) {
     TMCStepperControl.stop_jogging();
 }
