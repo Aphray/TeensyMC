@@ -84,11 +84,17 @@ class Stepper {
         // check if homing is complete (1 -> complete, 0 -> incomplete, -1 -> error)
         int8_t homing_status() __always_inline;
 
-        // called on homing complete to update the position
-        void home_position();
+        // set if the axis requires homing
+        void enable_homing(bool enable);
 
-        // returns if the stepper is homed
-        bool is_homed();
+        // called on homing complete to update the position
+        void homing_complete();
+
+        // returns if the stepper has been homed
+        bool homed();
+
+        // for resetting the home status
+        void reset_home();
 
         // attach a callback to be executed during probing (i.e., to read a switch/sensor)
         void set_probing_callback(int8_t (*callback)());
@@ -147,10 +153,12 @@ class Stepper {
         int32_t max_travel;
         uint32_t total_travel;
 
-        bool homed;
         bool invert_dir;
         bool invert_step;
+
+        bool home_found;
         bool invert_home;
+        bool homing_enabled;
 
         bool jogging;
         bool homing_probing;
@@ -176,7 +184,6 @@ class Stepper {
 
         // set the target position in relative coordinates (in steps)
         void set_target_rel_steps(int32_t rel_pos);
-
 
         // do a single step
         bool step() __always_inline;

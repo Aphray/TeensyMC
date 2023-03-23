@@ -19,7 +19,7 @@ class _accelerator {
 
         void decelerate_now();
 
-        bool is_accelerating();
+        bool accelerating();
 
         float compute_next_step_period();
 
@@ -41,6 +41,10 @@ class _accelerator {
 
 inline float interpf(float x0, float y0, float x1, float y1, float x) {
     return y0 + (x - x0) * (y1 - y0)/ (x1 - x0);
+}
+
+inline bool _accelerator::accelerating() {
+    return (current_step < accel_stop) || (current_step >= decel_start);
 }
 
 #ifdef SIN_CURVE_ACCELERATION

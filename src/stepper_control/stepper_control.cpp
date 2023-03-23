@@ -5,6 +5,7 @@
 #include "../communication/serial_command.h"
 #include "../event_handling/event_manager.h"
 
+#define ASSERT_IDLE if (state != IDLE) return
 
 _stepper_control::_stepper_control() {
     num_steppers = 0;
@@ -21,6 +22,7 @@ void _stepper_control::begin() {
     // setup the timers
     pulse_timer.begin([this]{ this->pulse_ISR(); });
     step_timer.begin([this]{ this->step_ISR(); }, 1000, false);
+    hold_timer.begin([this] {this->hold_ISR(); }, 1000, false);
 
     // add the serial commands
     TMCSerialCommand.register_command("EN", 2, false);
@@ -61,7 +63,7 @@ void _stepper_control::add_stepper(Stepper& stepper) {
 }
 
 void _stepper_control::start_move(float speed, float accel) {
-    if (steppers_active()) { return; }
+    ASSERT_IDLE;
     change_state(MOVING);
     run_steppers(speed, accel);
 }
@@ -72,27 +74,31 @@ void _stepper_control::start_home(uint8_t axis, float speed, float accel) {
 }
 
 void _stepper_control::start_home(Stepper* stepper, float speed, float accel) {
-    if (stepper == nullptr || steppers_active()) { return; }
+    if (stepper == nullptr) return;
+    if (state != HOME_FIRST) {
+        ASSERT_IDLE;
+    }
+
     change_state(HOMING);
     stepper->prepare_homing();
     run_steppers(speed, accel);
 }
 
 void _stepper_control::start_probe(uint8_t axis, float speed, float accel, int8_t dir) {
-    if (axis > num_steppers) { return; }
+    if (axis > num_steppers) return;
     _stepper_control::start_probe(steppers[axis], speed, accel, dir);
 }
 
 void _stepper_control::start_probe(Stepper* stepper, float speed, float accel, int8_t dir) {
-    if (stepper == nullptr || steppers_active()) { return; }
-    // state = PROBING;
+    if (stepper == nullptr) return;
+    ASSERT_IDLE;
     change_state(PROBING);
     stepper->prepare_probing(dir);
     run_steppers(speed, accel);
 }
 
 void _stepper_control::start_jogging(float* unit_vectors, float speed, float accel) {
-    if (steppers_active()) { return; }
+    ASSERT_IDLE;
     change_state(JOGGING);
     for (uint8_t n = 0; n < num_steppers; n++) {
         steppers[n]->prepare_jogging(unit_vectors[n]);
@@ -101,56 +107,67 @@ void _stepper_control::start_jogging(float* unit_vectors, float speed, float acc
 }
 
 void _stepper_control::stop_jogging() {
-    if (state == JOGGING) { stop(); }
+    if (state == JOGGING) stop();
 }
 
 void _stepper_control::zero_stepper(uint8_t axis) {
-    if (axis > num_steppers) { return; }
+    if (axis > num_steppers) return;
     _stepper_control::zero_stepper(steppers[axis]);
 }
 
 void _stepper_control::zero_stepper(Stepper* stepper) {
+    ASSERT_IDLE;
     stepper->set_zero();
 }
 
 void _stepper_control::stop() {
-    if (!steppers_active()) { return; }
-    accelerator.decelerate_now();
+    if (steppers_active()) accelerator.decelerate_now();
 }
 
 void _stepper_control::halt() {
-    if (!steppers_active()) { return; }
-
-    // state = FAULT;
-    change_state(FAULT);
+    if (steppers_active()) change_state(FAULT);
 }
 
 void _stepper_control::clear_fault() {
-    if (state != FAULT) { return; }
+    if (state != FAULT) return;
     fault_stepper = nullptr;
 
-    #ifdef HOME_STEPPERS_FIRST
-    change_state(HOME_FIRST);
-    #else
-    change_state(IDLE);
-    #endif
+    bool home_first = false;
+
+    Stepper** stepper = steppers;
+    while (*stepper) {
+        (*stepper)->reset_home();
+        if (!(*stepper)->homed()) home_first = true;
+        stepper++;
+    }
+
+    change_state(home_first ? HOME_FIRST : IDLE);
 }
 
-bool _stepper_control::steppers_active() {
-    return (state == MOVING || state == PROBING || state == HOMING || state == JOGGING);
+void _stepper_control::hold(uint32_t milliseconds) {
+    if (milliseconds == 0) clear_hold();
+    ASSERT_IDLE;
+    hold_ms = milliseconds;
+    change_state(HOLDING);
+    TMCMessageAgent.post_message(INFO, "Hold: started");
+    hold_timer.start();
+}
+
+void _stepper_control::clear_hold() {
+    if (state != HOLDING) return;
+    hold_timer.stop();
+    hold_ms = 0;
+    change_state(IDLE);
+    TMCMessageAgent.post_message(INFO, "Hold: manually cleared");
 }
 
 bool _stepper_control::steppers_homed() {
     Stepper** stepper = steppers;
     while (*stepper) {
-        if (!(*stepper)->is_homed()) { return false; }
+        if (!(*stepper)->homed()) return false;
         stepper++;
     }
     return true;
-}
-
-bool _stepper_control::steppers_accelerating() {
-    return accelerator.is_accelerating();
 }
 
 void _stepper_control::post_steppers_status(bool queue = false) {
@@ -167,8 +184,11 @@ void _stepper_control::post_steppers_status(bool queue = false) {
         stepper++;
     }
 
-    if (queue) { TMCMessageAgent.queue_message(STATUS, message); } 
-    else { TMCMessageAgent.post_message(STATUS, message); }
+    if (queue) { 
+        TMCMessageAgent.queue_message(STATUS, message); 
+    } else { 
+        TMCMessageAgent.post_message(STATUS, message); 
+    }
 }
 
 float _stepper_control::get_accelerator_speed() {
@@ -227,26 +247,26 @@ void _stepper_control::step_ISR() {
                 change_state(FAULT);
                 finish_move();
                 TMCEventManager.queue_event(FAULT_OCCURED);
-                TMCMessageAgent.queue_message(CRITICAL, "Fault occured on axis %i", fault_stepper->get_axis_id());
+                TMCMessageAgent.queue_message(CRITICAL, "Fault: axis %i", fault_stepper->get_axis_id());
 
             } else if (state == HOMING) {
 
                 switch (master_stepper->homing_status()) {
                     case 1:
                         // homing complete
-                        master_stepper->home_position();
+                        master_stepper->homing_complete();
 
                         change_state(IDLE);
                         finish_move();
                         TMCEventManager.queue_event(HOMING_COMPLETE);
-                        TMCMessageAgent.queue_message(INFO, "Homing complete on axis %i", master_stepper->get_axis_id());
+                        TMCMessageAgent.queue_message(INFO, "Homing: complete on axis %i", master_stepper->get_axis_id());
                         break;
                     case -1:
                         // homing failure
                         change_state(FAULT);
                         finish_move();
                         TMCEventManager.queue_event(HOMING_FAILED);
-                        TMCMessageAgent.queue_message(CRITICAL, "Homing failed on axis %i", master_stepper->get_axis_id());
+                        TMCMessageAgent.queue_message(CRITICAL, "Homing: failed on axis %i", master_stepper->get_axis_id());
                         break;
                     default:
                         // no action
@@ -261,14 +281,14 @@ void _stepper_control::step_ISR() {
                         change_state(IDLE);
                         finish_move();
                         TMCEventManager.queue_event(PROBING_COMPLETE);
-                        TMCMessageAgent.queue_message(INFO, "Probing complete on axis %i", master_stepper->get_axis_id());
+                        TMCMessageAgent.queue_message(INFO, "Probing: complete on axis %i", master_stepper->get_axis_id());
                         break;
                     case -1:
                         // probing failure
                         change_state(FAULT);
                         finish_move();
                         TMCEventManager.queue_event(PROBING_FAILED);
-                        TMCMessageAgent.queue_message(CRITICAL, "Probing failed on axis %i", master_stepper->get_axis_id());
+                        TMCMessageAgent.queue_message(CRITICAL, "Probing: failed on axis %i", master_stepper->get_axis_id());
                         break;
                     default:
                         // no action
@@ -280,11 +300,11 @@ void _stepper_control::step_ISR() {
                 if (state == JOGGING) { 
                     // jog complete
                     TMCEventManager.queue_event(JOG_COMPLETE);
-                    TMCMessageAgent.queue_message(INFO, "Jog complete");
+                    TMCMessageAgent.queue_message(INFO, "Jog: complete");
                 } else {
                     // move complete
                     TMCEventManager.queue_event(MOVE_COMPLETE);
-                    TMCMessageAgent.queue_message(INFO, "Move complete");
+                    TMCMessageAgent.queue_message(INFO, "Move: complete");
                 }
 
                 change_state(IDLE);
@@ -302,6 +322,14 @@ void _stepper_control::pulse_ISR() {
     while (*stepper) {
         (*stepper)->clear_step();
         stepper++;
+    }
+}
+
+void _stepper_control::hold_ISR() {
+    if ((--hold_ms) == 0) {
+        hold_timer.stop();
+        change_state(IDLE);
+        TMCMessageAgent.queue_message(INFO, "Hold: complete");
     }
 }
 
@@ -328,19 +356,19 @@ void _stepper_control::run_steppers(float speed, float accel) {
     switch (state) {
         case PROBING:
             TMCEventManager.trigger_event(PROBING_STARTED);
-            TMCMessageAgent.post_message(INFO, "Probing started on axis %i", master_stepper->get_axis_id());
+            TMCMessageAgent.post_message(INFO, "Probing: started on axis %i", master_stepper->get_axis_id());
             break;
         case HOMING:
             TMCEventManager.trigger_event(HOMING_STARTED);
-            TMCMessageAgent.post_message(INFO, "Homing started on axis %i", master_stepper->get_axis_id());
+            TMCMessageAgent.post_message(INFO, "Homing: started on axis %i", master_stepper->get_axis_id());
             break;
         case JOGGING:
             TMCEventManager.trigger_event(JOG_STARTED);
-            TMCMessageAgent.post_message(INFO, "Jog started");
+            TMCMessageAgent.post_message(INFO, "Jog: started");
             break;
         case MOVING:
             TMCEventManager.trigger_event(MOVE_STARTED);
-            TMCMessageAgent.post_message(INFO, "Move started");
+            TMCMessageAgent.post_message(INFO, "Move: started");
             break;
     }
 

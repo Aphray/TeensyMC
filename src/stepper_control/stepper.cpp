@@ -14,12 +14,6 @@ Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_, uint8_t en_pin_): dir_pin(
     invert_step = false;
     invert_home = false;
 
-    #ifdef HOME_STEPPERS_FIRST
-    homed = false;
-    #else
-    homed = true;
-    #endif
-
     homing_probing = false;
 
     axis = count++;
@@ -30,6 +24,7 @@ Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_, uint8_t en_pin_): dir_pin(
 
     set_units_per_step(1.0f);
     set_enable_level(LOW);
+    enable_homing(true);
 }
 
 void Stepper::begin() {
@@ -151,17 +146,29 @@ void Stepper::set_homing_callback(int8_t (*callback)()) {
 }
 
 void Stepper::prepare_homing() {
+    if (!homing_enabled) return;
     GUARD_ACTIVE;
-    homed = false;
+    home_found = false;
     homing_probing = true;
     set_target_rel_steps((total_travel + cvt_to_steps(HOMING_OVERSHOOT)) * (invert_home ? -1 : 1));
 }
 
-bool Stepper::is_homed() {
-    return homed;
+void Stepper::enable_homing(bool enable) {
+    homing_enabled = enable;
+    reset_home();
 }
 
-void Stepper::home_position() {
+bool Stepper::homed() {
+    return home_found;
+}
+
+void Stepper::reset_home() {
+    home_found = (homing_enabled ? false : true);
+}
+
+void Stepper::homing_complete() {
+    if (!homing_enabled) return;
+    home_found = true;
     position = invert_home ? min_travel : max_travel;
 }
 

@@ -16,6 +16,7 @@
     X(PROBING)              \
     X(JOGGING)              \
     X(MOVING)               \
+    X(HOLDING)              \
     X(HOME_FIRST)           \
 
 
@@ -69,8 +70,20 @@ class _stepper_control {
         // clears a fault condition
         void clear_fault();
 
+        // begins a hold condition
+        void hold(uint32_t milliseconds);
+
+        // cancels/clears the hold condition
+        void clear_hold();
+
+        // returns the remaining hold time (in milliseconds)
+        uint32_t get_hold_time();
+
         // returns whether the steppers are currently running
         bool steppers_active();
+
+        // returns if the hold condition is set
+        bool steppers_holding();
 
         // returns whether the steppers were homed
         bool steppers_homed();
@@ -118,6 +131,7 @@ class _stepper_control {
 
         OneShotTimer pulse_timer;
         PeriodicTimer step_timer;
+        PeriodicTimer hold_timer;
 
         // does a single step of the Bresenham algorithm
         bool do_bresenham_step() __always_inline;
@@ -128,11 +142,31 @@ class _stepper_control {
         void step_ISR();
         void pulse_ISR();
 
+        uint32_t hold_ms;
+
+        void hold_ISR();
+
         void run_steppers(float speed, float accel);
 
         void change_state(StepperState state) __always_inline;
         void restore_state();
 };
+
+inline uint32_t _stepper_control::get_hold_time() {
+    return hold_ms;
+}
+
+inline bool _stepper_control::steppers_active() {
+    return (state == MOVING || state == PROBING || state == HOMING || state == JOGGING);
+}
+
+inline bool _stepper_control::steppers_holding() {
+    return state == HOLDING;
+}
+
+inline bool _stepper_control::steppers_accelerating() {
+    return accelerator.accelerating();
+}
 
 inline bool _stepper_control::do_bresenham_step() {
     Stepper** stepper = steppers_sort;
