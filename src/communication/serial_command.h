@@ -79,7 +79,7 @@ class _serial_command {
         void register_command(char* cmd_name, uint8_t args, bool queue = true, uint8_t* variable_args = nullptr);
 
         // attach callback to the specified command
-        void add_callback(char* cmd, CommandCallback callback);
+        void add_callback(char* cmd_name, CommandCallback callback);
 
     private:
         Stream* stream;
