@@ -1,9 +1,9 @@
 #pragma once
 
-#include <queue>
 #include "Stream.h"
 #include "enum_factory.h"
 #include "../config.h"
+#include "../utility/fixed_queue.h"
 
 #define MESSAGE_LEVELS(X)   \
     X(STATUS)               \
@@ -55,7 +55,7 @@ class _message_agent {
 
         Stream* stream;
 
-        std::queue<_message> message_queue;
+        FixedQueue<_message, 10> message_queue;
 };
 
 

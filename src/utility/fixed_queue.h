@@ -33,8 +33,8 @@ class FixedQueue {
         // get the available space in the queue
         inline uint16_t available();
 
-        // get the unavailable (used) space in the queue
-        inline uint16_t unavailable();
+        // get the number of items in the queue
+        inline uint16_t size();
 
         // get the max size of the queue
         inline uint16_t max_size();
@@ -97,7 +97,7 @@ uint16_t FixedQueue<T, SIZE>::available() {
 }
 
 template<typename T, uint16_t SIZE>
-uint16_t FixedQueue<T, SIZE>::unavailable() {
+uint16_t FixedQueue<T, SIZE>::size() {
     return count;
 }
 

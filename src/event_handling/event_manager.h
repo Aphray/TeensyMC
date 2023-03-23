@@ -1,16 +1,15 @@
 #pragma once
 
-#include <map>
-#include <queue>
 #include <Arduino.h>
 
 #include "events.h"
 #include "../config.h"
+#include "../utility/fixed_queue.h"
 
 
 struct _event_callback {
     StepperEvents event;
-    void (*callback)();
+    void (*function)();
 };
 
 
@@ -30,9 +29,9 @@ class _event_manager {
 
     private:
 
-        uint8_t num_callbacks;
+        uint8_t n_callbacks;
 
-        std::queue<StepperEvents> event_queue;
+        FixedQueue<StepperEvents, 5> event_queue;
         _event_callback callbacks[MAX_EVENT_CALLBACKS];
 
         void run_event_callbacks(StepperEvents event);
