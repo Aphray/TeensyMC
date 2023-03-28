@@ -52,6 +52,7 @@ float _accelerator::compute_next_step_period() {
     } else if (current_step < decel_start) {
         // constant "cruise" period
         current_speed = target_speed;
+        return 1'000'000.0F / current_speed;
 
     } else if (current_step < total_steps) {
         // deceleration period
@@ -65,6 +66,9 @@ float _accelerator::compute_next_step_period() {
         // move complete
         current_speed = 0;
     }
+
+    Serial.println(current_step);
+    Serial.println(accel_stop);
 
     return (current_speed > 0) ? 1'000'000.0F / current_speed: -1;
 }

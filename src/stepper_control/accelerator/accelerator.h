@@ -54,8 +54,8 @@ inline float _accelerator::interp_scurve(uint32_t step) {
     const uint32_t NUM_POINTS = sizeof(SIN_SPEED_TABLE) / sizeof(float);
     const float TWO_PI_F = (float) TWO_PI;
 
-    float x = ((float) step) / accel_stop * (NUM_POINTS - 1);
-    int x0 = (int) x;
+    float x = float(step) / accel_stop * (NUM_POINTS - 1);
+    int x0 = int(x);
     
     float speed;
     if ((x0 + 1) >= NUM_POINTS) {

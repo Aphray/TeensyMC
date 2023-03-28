@@ -326,9 +326,6 @@ void _stepper_control::step_ISR() {
 
                 if (state == JOGGING) { 
 
-                    Serial.println(master_stepper->move_complete());
-                    Serial.println(period);
-                    
                     // jog complete
                     TMCEventManager.queue_event(JOG_COMPLETE);
                     TMCMessageAgent.queue_message(INFO, "Jog: complete");
