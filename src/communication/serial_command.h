@@ -76,7 +76,13 @@ class _serial_command {
         void process_command_queue();
 
         // add a user-defined command and callback that can be executed via serial commands
-        void register_command(char* cmd_name, uint8_t args, bool queue = true, uint8_t* variable_args = nullptr);
+        void register_command(char* cmd_name, uint8_t args);
+        // add a user-defined command and callback that can be executed via serial commands
+        void register_command(char* cmd_name, uint8_t args, bool queue);
+        // add a user-defined command and callback that can be executed via serial commands
+        void register_command(char* cmd_name, uint8_t args, uint8_t* variable_args);
+        // add a user-defined command and callback that can be executed via serial commands
+        void register_command(char* cmd_name, uint8_t args, bool queue, uint8_t* variable_args);
 
         // attach callback to the specified command
         void add_callback(char* cmd_name, CommandCallback callback);
