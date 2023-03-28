@@ -41,6 +41,9 @@ void _accelerator::decelerate_now() {
 float _accelerator::compute_next_step_period() {
     current_step++;
 
+    Serial.println(current_step);
+    Serial.println(accel_stop);
+
     if (current_step < accel_stop) {
         // acceleration period
         #ifdef SIN_CURVE_ACCELERATION
@@ -67,8 +70,7 @@ float _accelerator::compute_next_step_period() {
         current_speed = 0;
     }
 
-    Serial.println(current_step);
-    Serial.println(accel_stop);
+    
 
     return (current_speed > 0) ? 1'000'000.0F / current_speed: -1;
 }
