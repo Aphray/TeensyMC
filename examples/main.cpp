@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 #include "TeensyMC.h"
 
 const uint8_t ZPROBE_PIN = 10;
@@ -7,9 +9,9 @@ const uint8_t YHOME_PIN = 12;
 const uint8_t ZHOME_PIN = 13;
 
 // create some steppers
-Stepper xstepper(1, 2); // (<STEP_PIN>,<DIR_PIN>)
-Stepper ystepper(3, 4);
-Stepper zstepper(5, 6);
+Stepper xstepper(1, 2, 9); // (<STEP_PIN>,<DIR_PIN>)
+Stepper ystepper(3, 4, 9);
+Stepper zstepper(5, 6, 9);
 
 
 int8_t check_zprobe() {
