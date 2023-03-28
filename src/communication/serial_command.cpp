@@ -121,7 +121,7 @@ void _serial_command::poll() {
                 // end of command
                 // null-terminate the buffer and parse the data
                 *rx_ptr = 0;
-                parse(rx_buffer);
+                if (rx_buffer[0] != 0) parse(rx_buffer);
 
                 // zero the buffer and reset the pointer
                 rx_buffer[0] = 0;
