@@ -304,6 +304,7 @@ CALLBACK(JOG) {
         return;
     }
 
+    Serial.println("JOG");
     TMCStepperControl.start_jogging(unit_vectors, speed_f, accel_f);
 }
 
