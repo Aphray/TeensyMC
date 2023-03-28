@@ -369,6 +369,7 @@ void _stepper_control::run_steppers(float speed, float accel) {
     }
 
     float start_speed = 0;
+
     speed = master_stepper->cvt_to_steps(speed);
     accel = master_stepper->cvt_to_steps(accel);
 

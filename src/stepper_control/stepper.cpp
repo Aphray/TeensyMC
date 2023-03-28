@@ -121,7 +121,6 @@ void Stepper::set_target_abs_steps(int32_t abs_pos) {
 
 void Stepper::set_target_rel_steps(int32_t rel_pos) {
     GUARD_ACTIVE;
-
     set_direction((rel_pos >= 0) ? 1 : -1);
 
     steps_traveled = 0;
@@ -192,15 +191,11 @@ void Stepper::prepare_probing(int8_t dir_) {
 void Stepper::prepare_jogging(float unit_vector) {
     GUARD_ACTIVE;
     unit_vector = constrain(unit_vector, -1, 1);
-
     if (unit_vector == 0) {
         return;
-    } else if (unit_vector < 0) {
-        jogging = true;
-        set_target_rel_steps(unit_vector * 1000);
     } else {
-        jogging = true;
         set_target_rel_steps(unit_vector * 1000);
+        jogging = true;
     }
 }
 

@@ -296,8 +296,6 @@ CALLBACK(JOG) {
         return;
     }
 
-    Serial.println(speed_f);
-
     char* accel_c = args->next();
     float accel_f = 0;
 
