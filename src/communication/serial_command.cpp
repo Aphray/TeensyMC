@@ -224,6 +224,8 @@ void _serial_command::parse(char* data) {
             // check if the argument count matches
             if (arg_list.get_num_args() == n_args) {
                 cmd->args.copy(&arg_list);
+
+                Serial.println(cmd_name);
                 
                 if (!cmd->queue) {
                     run_cmd(cmd);
