@@ -143,14 +143,14 @@ void _serial_command::process_command_queue() {
 }
 
 void _serial_command::register_command(char* cmd_name, uint8_t args) {
-    register_command(cmd_name, args, false, nullptr);
+    register_command(cmd_name, args, true, nullptr);
 }
 void _serial_command::register_command(char* cmd_name, uint8_t args, bool queue) {
     register_command(cmd_name, args, queue, nullptr);
 }
 
 void _serial_command::register_command(char* cmd_name, uint8_t args, uint8_t* variable_args) {
-    register_command(cmd_name, args, false, variable_args);
+    register_command(cmd_name, args, true, variable_args);
 }
 
 void _serial_command::register_command(char* cmd_name, uint8_t args, bool queue, uint8_t* variable_args) {
@@ -225,7 +225,6 @@ void _serial_command::parse(char* data) {
                 cmd->args.copy(&arg_list);
                 
                 if (!cmd->queue) {
-                    Serial.println("foo");
                     run_cmd(cmd);
                 } else if (!cmd_queue.full()) {
                     cmd_queue.push(cmd);
