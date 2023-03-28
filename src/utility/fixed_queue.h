@@ -30,8 +30,8 @@ class FixedQueue {
         // check if queue is empty
         inline bool empty();
 
-        // get the available space in the queue
-        inline uint16_t available();
+        // get the remaining space in the queue
+        inline uint16_t remaining();
 
         // get the number of items in the queue
         inline uint16_t size();
@@ -92,7 +92,7 @@ bool FixedQueue<T, SIZE>::empty() {
 }
 
 template<typename T, uint16_t SIZE>
-uint16_t FixedQueue<T, SIZE>::available() {
+uint16_t FixedQueue<T, SIZE>::remaining() {
     return SIZE - count;
 }
 
