@@ -190,6 +190,7 @@ inline bool _stepper_control::do_bresenham_step() {
 
 inline void _stepper_control::finish_move() {
     step_timer.stop();
+    hold_timer.stop();
     accelerator.reset();
     post_steppers_status(true);
 
