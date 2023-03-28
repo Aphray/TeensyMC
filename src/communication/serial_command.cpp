@@ -209,6 +209,10 @@ void _serial_command::parse(char* data) {
             // number of arguments needed
             uint8_t n_args = (cmd->n_var_args != nullptr) ? *(cmd->n_var_args) + cmd->n_args : cmd->n_args;
 
+            if (cmd->n_var_args) {
+                Serial.println(*(cmd->n_var_args));
+            }
+
             // check if the argument count matches
             if (arg_list.get_num_args() == n_args) {
                 cmd->args.copy(&arg_list);
