@@ -220,15 +220,12 @@ void _serial_command::parse(char* data) {
             // number of arguments needed
             uint8_t n_args = (cmd->n_var_args != nullptr) ? *(cmd->n_var_args) + cmd->n_args : cmd->n_args;
 
-            if (cmd->n_var_args) {
-                Serial.println(*(cmd->n_var_args));
-            }
-
             // check if the argument count matches
             if (arg_list.get_num_args() == n_args) {
                 cmd->args.copy(&arg_list);
                 
                 if (!cmd->queue) {
+                    Serial.println("foo");
                     run_cmd(cmd);
                 } else if (!cmd_queue.full()) {
                     cmd_queue.push(cmd);
@@ -236,7 +233,7 @@ void _serial_command::parse(char* data) {
                     if (cmd_queue.full()) {
                         TMCMessageAgent.post_message(INFO, "Command queue: full");
                     } else {
-                        TMCMessageAgent.post_message(INFO, "Command queue: %i available", cmd_queue.available());
+                        TMCMessageAgent.post_message(INFO, "Command queue: %i free", cmd_queue.available());
                     }
 
                 } else {
