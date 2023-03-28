@@ -103,6 +103,11 @@ float Stepper::get_position() {
     return position * units_per_step;
 }
 
+void Stepper::set_zero() {
+    GUARD_ACTIVE;
+    position = 0;
+}
+
 void Stepper::set_direction(int8_t dir_) {
     GUARD_ACTIVE;
     dir = (dir_ >= 0) ? 1 : -1;
