@@ -43,6 +43,8 @@ float _accelerator::compute_next_step_period() {
 
     Serial.println(current_step);
     Serial.println(accel_stop);
+    Serial.println(decel_start);
+    Serial.println(total_steps);
 
     if (current_step < accel_stop) {
         // acceleration period
