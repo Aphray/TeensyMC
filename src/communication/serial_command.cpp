@@ -140,6 +140,7 @@ void _serial_command::process_command_queue() {
 
     _command* cmd = cmd_queue.pop();
     run_cmd(cmd);
+    TMCMessageAgent.post_message(INFO, "Command queue: %i / %i", cmd_queue.available(), cmd_queue.max_size());
 }
 
 void _serial_command::register_command(char* cmd_name, uint8_t args) {
@@ -232,7 +233,7 @@ void _serial_command::parse(char* data) {
                     if (cmd_queue.full()) {
                         TMCMessageAgent.post_message(INFO, "Command queue: full");
                     } else {
-                        TMCMessageAgent.post_message(INFO, "Command queue: %i free", cmd_queue.available());
+                        TMCMessageAgent.post_message(INFO, "Command queue: %i / %i", cmd_queue.available(), cmd_queue.max_size());
                     }
 
                 } else {
