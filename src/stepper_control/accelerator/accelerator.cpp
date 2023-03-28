@@ -14,8 +14,6 @@ void _accelerator::prepare(uint32_t steps, float initial_speed_, float target_sp
     target_speed = target_speed_;
     accel_stop = (target_speed * target_speed - initial_speed * initial_speed) / (accel + accel);
 
-    Serial.println(target_speed_);
-
     if (accel_stop <= (steps / 2)) {
         // trapezoid profile
         decel_start = total_steps - accel_stop;

@@ -372,6 +372,8 @@ void _stepper_control::run_steppers(float speed, float accel) {
     speed = master_stepper->cvt_to_steps(speed);
     accel = master_stepper->cvt_to_steps(accel);
 
+    Serial.println(speed);
+
     Stepper** stepper = steppers;
     while (*stepper) {
         (*stepper)->constrain_speed_accel(master_stepper, &start_speed, &speed, &accel);
