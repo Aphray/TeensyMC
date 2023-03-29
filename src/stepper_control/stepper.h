@@ -143,12 +143,12 @@ class Stepper {
         float max_speed;    // maximum speed (steps/sec)
         float max_accel;    // maximum acceleration (steps/s^2)
 
-        int8_t dir;
-        uint8_t dir_cw;
-        uint8_t dir_ccw;
+        int8_t dir;         // current direction (-1 or 1)
+        uint8_t dir_cw;     // pin state for clockwise rotation
+        uint8_t dir_ccw;    // pin state for counter-clockwise rotation
 
-        uint8_t step_1;
-        uint8_t step_0;
+        uint8_t step_rise_edge;     // step rising edge
+        uint8_t step_fall_edge;     // step falling edge
 
         uint32_t steps_traveled;
         int32_t target_position;
@@ -157,9 +157,6 @@ class Stepper {
         int32_t min_travel;
         int32_t max_travel;
         uint32_t total_travel;
-
-        // bool invert_dir;
-        // bool invert_step;
 
         bool home_found;
         bool invert_home;
@@ -180,8 +177,9 @@ class Stepper {
 
         static uint8_t count;
 
-        // user-defined callbacks for homing and probing
+        // user-defined callback for homing
         int8_t (*homing_callback)();
+        // user-defined callback for probing
         int8_t (*probing_callback)();
 
         // set the target position in absolute coordinates (in steps)
@@ -217,12 +215,12 @@ inline bool Stepper::step() {
         return false;
     }
 
-    digitalWriteFast(step_pin, step_1);
+    digitalWriteFast(step_pin, step_rise_edge);
     return true;
 }
 
 inline void Stepper::clear_step() {
-    digitalWriteFast(step_pin, step_0);
+    digitalWriteFast(step_pin, step_fall_edge);
 }
 
 inline bool Stepper::move_complete() {

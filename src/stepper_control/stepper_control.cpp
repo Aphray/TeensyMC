@@ -9,12 +9,7 @@
 
 _stepper_control::_stepper_control() {
     num_steppers = 0;
-    
-    #ifdef HOME_STEPPERS_FIRST
-    prev_state = state = HOME_FIRST;
-    #else
     prev_state = state = IDLE;
-    #endif
 }
 
 void _stepper_control::begin() {
@@ -63,7 +58,6 @@ void _stepper_control::sort_steppers() {
 }
 
 void _stepper_control::add_stepper(Stepper& stepper) {
-
     if (++num_steppers > MAX_STEPPERS) {
         TMCMessageAgent.post_message(ERROR, "Too many steppers initialized; 'MAX_STEPPERS' is set to %i", MAX_STEPPERS);
         abort();
@@ -71,6 +65,8 @@ void _stepper_control::add_stepper(Stepper& stepper) {
 
     steppers[num_steppers - 1] = &stepper;
     steppers_sort[num_steppers - 1] = &stepper;
+    
+    if (!stepper.homed()) change_state(HOME_FIRST);
 }
 
 void _stepper_control::start_move(float speed, float accel) {

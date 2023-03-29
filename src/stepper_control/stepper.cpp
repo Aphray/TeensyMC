@@ -10,8 +10,6 @@ uint8_t Stepper::count = 0;
 
 Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_, uint8_t en_pin_): dir_pin(dir_pin_), step_pin(step_pin_), en_pin(en_pin_) {
 
-    // invert_dir = false;
-    // invert_step = false;
     invert_home = false;
 
     homing_probing = false;
@@ -57,11 +55,11 @@ void Stepper::invert_dir_polarity(bool invert) {
 void Stepper::invert_step_polarity(bool invert) {
     GUARD_ACTIVE;
     if (invert) {
-        step_1 = LOW;
-        step_0 = HIGH;
+        step_rise_edge = LOW;
+        step_fall_edge = HIGH;
     } else {
-        step_1 = HIGH;
-        step_0 = LOW;
+        step_rise_edge = HIGH;
+        step_fall_edge = LOW;
     }
 }
 
