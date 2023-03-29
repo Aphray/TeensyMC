@@ -10,8 +10,8 @@ uint8_t Stepper::count = 0;
 
 Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_, uint8_t en_pin_): dir_pin(dir_pin_), step_pin(step_pin_), en_pin(en_pin_) {
 
-    invert_dir = false;
-    invert_step = false;
+    // invert_dir = false;
+    // invert_step = false;
     invert_home = false;
 
     homing_probing = false;
@@ -25,6 +25,8 @@ Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_, uint8_t en_pin_): dir_pin(
     set_units_per_step(1.0f);
     set_enable_level(LOW);
     enable_homing(true);
+    invert_dir_polarity(false);
+    invert_step_polarity(false);
 }
 
 void Stepper::begin() {
@@ -34,23 +36,38 @@ void Stepper::begin() {
 }
 
 void Stepper::enable(bool state) {
-    if (state) { digitalWriteFast(en_pin, enable_level); } 
-    else { digitalWriteFast(en_pin, (enable_level == HIGH ? LOW : HIGH)); }
+    if (state) { 
+        digitalWriteFast(en_pin, enable_level); 
+    } else { 
+        digitalWriteFast(en_pin, (enable_level == HIGH ? LOW : HIGH)); 
+    }
 }
 
 void Stepper::invert_dir_polarity(bool invert) {
     GUARD_ACTIVE;
-    if (invert) { invert_dir = true; }
+    if (invert) {
+        dir_cw = LOW;
+        dir_ccw = HIGH;
+    } else {
+        dir_cw = HIGH;
+        dir_ccw = LOW;
+    }
 }
 
 void Stepper::invert_step_polarity(bool invert) {
     GUARD_ACTIVE;
-    if (invert) { invert_step = true; }
+    if (invert) {
+        step_1 = LOW;
+        step_0 = HIGH;
+    } else {
+        step_1 = HIGH;
+        step_0 = LOW;
+    }
 }
 
 void Stepper::invert_home_dir(bool invert) {
     GUARD_ACTIVE;
-    if (invert) { invert_home = true; }
+    if (invert) invert_home = true;
 }
 
 void Stepper::set_enable_level(uint8_t level) {
@@ -111,8 +128,7 @@ void Stepper::set_zero() {
 void Stepper::set_direction(int8_t dir_) {
     GUARD_ACTIVE;
     dir = (dir_ >= 0) ? 1 : -1;
-    
-    digitalWriteFast(dir_pin, (dir > 0 ? (invert_dir ? LOW : HIGH) : (invert_dir ? HIGH : LOW)));
+    digitalWriteFast(dir_pin, (dir >= 0 ? dir_cw : dir_ccw));
 }
 
 void Stepper::set_target_abs_steps(int32_t abs_pos) {

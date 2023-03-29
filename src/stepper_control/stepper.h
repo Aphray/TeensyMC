@@ -144,6 +144,11 @@ class Stepper {
         float max_accel;    // maximum acceleration (steps/s^2)
 
         int8_t dir;
+        uint8_t dir_cw;
+        uint8_t dir_ccw;
+
+        uint8_t step_1;
+        uint8_t step_0;
 
         uint32_t steps_traveled;
         int32_t target_position;
@@ -153,8 +158,8 @@ class Stepper {
         int32_t max_travel;
         uint32_t total_travel;
 
-        bool invert_dir;
-        bool invert_step;
+        // bool invert_dir;
+        // bool invert_step;
 
         bool home_found;
         bool invert_home;
@@ -212,12 +217,12 @@ inline bool Stepper::step() {
         return false;
     }
 
-    digitalWriteFast(step_pin, (!invert_step ? HIGH : LOW));
+    digitalWriteFast(step_pin, step_1);
     return true;
 }
 
 inline void Stepper::clear_step() {
-    digitalWriteFast(step_pin, (!invert_step ? LOW : HIGH));
+    digitalWriteFast(step_pin, step_0);
 }
 
 inline bool Stepper::move_complete() {
