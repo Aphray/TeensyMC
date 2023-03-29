@@ -30,17 +30,16 @@ class FixedQueue {
         // check if queue is empty
         inline bool empty();
 
-        // get the remaining space in the queue
-        inline uint16_t remaining();
+        // get the free space in the queue
+        inline uint16_t free();
 
         // get the number of items in the queue
         inline uint16_t size();
 
-        // get the max size of the queue
+        // get the max number of items that can be added to the queue
         inline uint16_t max_size();
 
     private:
-
         T queue[SIZE];
 
         uint16_t tail;
@@ -92,7 +91,7 @@ bool FixedQueue<T, SIZE>::empty() {
 }
 
 template<typename T, uint16_t SIZE>
-uint16_t FixedQueue<T, SIZE>::remaining() {
+uint16_t FixedQueue<T, SIZE>::free() {
     return SIZE - count;
 }
 

@@ -33,7 +33,6 @@ void _stepper_control::begin() {
     TMCSerialCommand.register_command("JOGC", 0, false);
     TMCSerialCommand.register_command("HOLD", 1);
     TMCSerialCommand.register_command("HOLDC", 0, false);
-   
 
     // attach callbacks
     TMCSerialCommand.add_callback("ENABL", &ENABL__cb);
@@ -65,7 +64,7 @@ void _stepper_control::add_stepper(Stepper& stepper) {
 
     steppers[num_steppers - 1] = &stepper;
     steppers_sort[num_steppers - 1] = &stepper;
-    
+
     if (!stepper.homed()) change_state(HOME_FIRST);
 }
 
