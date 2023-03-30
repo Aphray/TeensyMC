@@ -249,6 +249,11 @@ void _serial_command::parse(char* data) {
     TMCMessageAgent.post_message(ERROR, "Command <%s> unrecognized", cmd_name);
 }
 
+void _serial_command::run_cmd(char* cmd) {
+    if (cmd == nullptr) return;
+    parse(cmd);
+}
+
 void _serial_command::run_cmd(_command* cmd) {
     // execute the callbacks and pass the arguments
     for (uint8_t i = 0; i < cmd->n_callbacks; i ++) {

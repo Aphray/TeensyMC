@@ -90,6 +90,9 @@ class _serial_command {
         // clears the command queue
         void clear_queue();
 
+        // call a command internally
+        void run_cmd(char* cmd);
+
     private:
         Stream* stream;
 
