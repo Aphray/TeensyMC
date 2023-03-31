@@ -180,7 +180,7 @@ void _stepper_control::post_steppers_status(bool queue = false) {
     static const char* const STEPPER_STATE_STRINGS[] = { STEPPER_STATES(MAKE_STRINGS) };
 
     char message[MESSAGE_BUFFER_SIZE];
-    sprintf(message, "(%s)", STEPPER_STATE_STRINGS[state]);
+    sprintf(message, "%s|", STEPPER_STATE_STRINGS[state]);
 
     if (state == HOLDING) {
 
@@ -196,7 +196,7 @@ void _stepper_control::post_steppers_status(bool queue = false) {
     } else {
         Stepper** stepper = steppers;
         while (*stepper) {
-            sprintf(message + strlen(message), " AX%i:(%f,%f)", 
+            sprintf(message + strlen(message), "AX%i:(%f,%f)", 
                 (*stepper)->get_axis_id(), (*stepper)->get_position(), (*stepper)->get_speed());
 
             stepper++;
