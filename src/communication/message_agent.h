@@ -28,7 +28,7 @@ struct _message {
     _message(MessageLevel level, char* format, Args... args) {
         static const char* const MESSAGE_LEVEL_STRINGS[] = { MESSAGE_LEVELS(MAKE_STRINGS) };
 
-        sprintf(buffer, "%s|", MESSAGE_LEVEL_STRINGS[level]);
+        sprintf(buffer, "[%s] ", MESSAGE_LEVEL_STRINGS[level]);
         sprintf(buffer + strlen(buffer), format, args...);
     }
 };

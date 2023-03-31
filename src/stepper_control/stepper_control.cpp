@@ -180,7 +180,7 @@ void _stepper_control::post_steppers_status(bool queue = false) {
     static const char* const STEPPER_STATE_STRINGS[] = { STEPPER_STATES(MAKE_STRINGS) };
 
     char message[MESSAGE_BUFFER_SIZE];
-    sprintf(message, "%s|", STEPPER_STATE_STRINGS[state]);
+    sprintf(message, "%s ", STEPPER_STATE_STRINGS[state]);
 
     if (state == HOLDING) {
 
@@ -195,12 +195,25 @@ void _stepper_control::post_steppers_status(bool queue = false) {
 
     } else {
         Stepper** stepper = steppers;
-        while (*stepper) {
-            sprintf(message + strlen(message), "AX%i:(%f,%f)", 
-                (*stepper)->get_axis_id(), (*stepper)->get_position(), (*stepper)->get_speed());
 
-            stepper++;
+        char pos_buffer[7 * MAX_STEPPERS + MAX_STEPPERS];
+        char speed_buffer[7 * MAX_STEPPERS + MAX_STEPPERS];
+
+        for (uint8_t n = 0; n < num_steppers; n++) {
+            Stepper* stepper = steppers[n];
+
+            sprintf(pos_buffer + strlen(pos_buffer), "%f%s", stepper->get_position(), (n < (num_steppers - 1) ? "," : ""));
+            sprintf(speed_buffer + strlen(speed_buffer), "%f%s", stepper->get_speed(), (n < (num_steppers - 1) ? "," : ""));
         }
+
+        // while (*stepper) {
+        //     sprintf(message + strlen(message), "AX%i:(%f,%f)", 
+        //         (*stepper)->get_axis_id(), (*stepper)->get_position(), (*stepper)->get_speed());
+
+        //     stepper++;
+        // }
+
+        sprintf(message + strlen(message), "Pos:[%s] Speed:[%s]", pos_buffer, speed_buffer);
     }
 
     if (queue) { 
