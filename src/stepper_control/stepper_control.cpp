@@ -202,8 +202,8 @@ void _stepper_control::post_steppers_status(bool queue = false) {
         for (uint8_t n = 0; n < num_steppers; n++) {
             Stepper* stepper = steppers[n];
 
-            sprintf(pos_buffer + strlen(pos_buffer), "%f%s", stepper->get_position(), (n < (num_steppers - 1) ? "," : ""));
-            sprintf(speed_buffer + strlen(speed_buffer), "%f%s", stepper->get_speed(), (n < (num_steppers - 1) ? "," : ""));
+            sprintf(pos_buffer + ((n == 0) ? 0 : strlen(pos_buffer)), "%f%s", stepper->get_position(), (n < (num_steppers - 1) ? "," : ""));
+            sprintf(speed_buffer + ((n == 0) ? 0 : strlen(speed_buffer)), "%f%s", stepper->get_speed(), (n < (num_steppers - 1) ? "," : ""));
         }
 
         // while (*stepper) {
@@ -242,6 +242,7 @@ Stepper* _stepper_control::get_faulted_stepper() {
 Stepper* _stepper_control::get_stepper(uint8_t axis) {
     return (axis < num_steppers) ? steppers[axis] : nullptr;
 }
+
 
 Stepper* _stepper_control::get_next_stepper() {
     static uint8_t idx = 0;
