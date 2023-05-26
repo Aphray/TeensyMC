@@ -208,6 +208,9 @@ void _serial_command::clear_queue() {
 }
 
 void _serial_command::parse(char* data) {
+    
+    TMCMessageAgent.post_message(DEBUG, "Echo: <%s>", data);
+
     // get the command and make the arguments list
     char* cmd_name = strtok(data, CMD_DELIMITER);
     ArgList arg_list(strtok(NULL, CMD_DELIMITER));
