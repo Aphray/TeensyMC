@@ -2,6 +2,8 @@
 
 #include "../communication/serial_command.h"
 
+#define CALLBACK(name) void name##__cb(char* cmd, ArgList* args)
+
 // enable stepper command
 CALLBACK(ENABL);
 

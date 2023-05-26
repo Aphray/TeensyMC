@@ -8,11 +8,7 @@
 #include "../config.h"
 #include "../utility/fixed_queue.h"
 
-#define CALLBACK(name) void name##__cb(char* cmd, ArgList* args)
 
-inline void ARG_ERROR(char* arg) {
-    TMCMessageAgent.post_message(ERROR, "Command error; invalid argument (%s)", arg);
-}
 
 bool argtoi(char* arg, int* res);
 
@@ -53,7 +49,7 @@ typedef void (*CommandCallback)(char*, ArgList*);
 struct _command {
     char name[CMD_CHAR_MAX + 1];
 
-    bool queue;
+    bool queue_cmd;
 
     uint8_t n_args;
     uint8_t* n_var_args;

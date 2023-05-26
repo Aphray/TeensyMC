@@ -2,16 +2,18 @@
 #include "callbacks.h"
 #include "stepper_control.h"
 #include "../communication/message_agent.h"
+#include "../communication/serial_command.h"
 
-
-inline void CHECK_ACTIVE(char* cmd) {
-    if (TMCStepperControl.steppers_active()) { TMCMessageAgent.post_message(ERROR, "Command <%s> cannot run; steppers are active", cmd); }
+inline void ARG_ERROR(char* arg) {
+    TMCMessageAgent.post_message(ERROR, "Command error; invalid argument (%s)", arg);
 }
 
+// #define ARG_ERROR(arg) TMCMessageAgent.post_message(ERROR, "Command error; invalid argument (%s)", arg); return;
 
-inline void CHECK_HOMED(char* cmd) {
-    if (!TMCStepperControl.steppers_homed()) { TMCMessageAgent.post_message(ERROR, "Command <%s> cannot run; steppers not homed", cmd); }
-}
+#define ASSERT_INACTIVE if (TMCStepperControl.steppers_active()) { TMCMessageAgent.post_message(ERROR, "Command <%s> cannot run; steppers are active", cmd); return; }
+#define ASSERT_ACTIVE if (!TMCStepperControl.steppers_active()) { TMCMessageAgent.post_message(ERROR, "Command <%s> cannot run; steppers are not active", cmd); return; }
+#define ASSERT_HOMED if (!TMCStepperControl.steppers_homed()) { TMCMessageAgent.post_message(ERROR, "Command <%s> cannot run; steppers not homed", cmd); return; }
+
 
 CALLBACK(ENABL) {
     // enable command
@@ -22,8 +24,9 @@ CALLBACK(ENABL) {
     int ax_i = 0;
     bool en_all = false;
 
-    if (ax_c[0] == ARG_SKIP_CHAR) { en_all = true; }
-    else if (!argtoi(ax_c, &ax_i) || ax_i < 0 || ax_i > TMCStepperControl.get_num_steppers()) {
+    if (ax_c[0] == ARG_SKIP_CHAR) { 
+        en_all = true; 
+    } else if (!argtoi(ax_c, &ax_i) || ax_i < 0 || ax_i > TMCStepperControl.get_num_steppers()) {
         ARG_ERROR(ax_c);
         return;
     } 
@@ -45,8 +48,8 @@ CALLBACK(ENABL) {
 CALLBACK(MOVE) {
     // move command
 
-    CHECK_ACTIVE(cmd);
-    CHECK_HOMED(cmd);
+    ASSERT_HOMED;
+    ASSERT_INACTIVE;
 
     for (uint8_t n = 0; n < TMCStepperControl.get_num_steppers(); n ++) {
 
@@ -103,8 +106,8 @@ CALLBACK(MOVE) {
 CALLBACK(PROBE) {
     // probe command
     
-    CHECK_ACTIVE(cmd);
-    CHECK_HOMED(cmd);
+    ASSERT_HOMED;
+    ASSERT_INACTIVE;
 
     char* ax_c = args->next();
     char* dir_c = args->next();
@@ -140,7 +143,8 @@ CALLBACK(PROBE) {
 
 CALLBACK(HOME) {
     // home command
-    CHECK_ACTIVE(cmd);
+    
+    ASSERT_INACTIVE;
 
     char* ax_c = args->next();
     char* speed_c = args->next();
@@ -170,7 +174,7 @@ CALLBACK(HOME) {
 CALLBACK(CFAULT) {
     // clear fault command
 
-    CHECK_ACTIVE(cmd);
+    ASSERT_INACTIVE;
 
     TMCStepperControl.clear_fault();
 }
@@ -178,7 +182,7 @@ CALLBACK(CFAULT) {
 CALLBACK(ZERO) {
     // set zero command
 
-    CHECK_ACTIVE(cmd);
+    ASSERT_INACTIVE;
 
     char* ax_c = args->next();
 
@@ -194,12 +198,18 @@ CALLBACK(ZERO) {
 CALLBACK(STOP) {
     // stop (controlled w/ deceleration) command
 
+    ASSERT_ACTIVE;
+    
+    TMCSerialCommand.clear_queue();
     TMCStepperControl.stop();
 }
 
 CALLBACK(HALT) {
     // halt/e-stop command
 
+    ASSERT_ACTIVE;
+
+    TMCSerialCommand.clear_queue();
     TMCStepperControl.halt();
 }
 
@@ -261,8 +271,8 @@ CALLBACK(LIMIT) {
 CALLBACK(JOG) {
     // jog begin command
 
-    CHECK_ACTIVE(cmd);
-    CHECK_HOMED(cmd);
+    ASSERT_INACTIVE;
+    ASSERT_HOMED;
 
     float sum_sqr;
     float unit_vectors[TMCStepperControl.get_num_steppers()] = {0};
@@ -314,6 +324,10 @@ CALLBACK(JOGC) {
 
 
 CALLBACK(HOLD) {
+
+    ASSERT_INACTIVE;
+    ASSERT_HOMED;
+
     char* ms_c = args->next();
     int ms_i = 0;
     

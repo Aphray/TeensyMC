@@ -174,7 +174,7 @@ void _serial_command::register_command(char* cmd_name, uint8_t args, bool queue,
 
     // assign the command info
     strcpy(reg_cmd->name, cmd_name);
-    reg_cmd->queue = queue;
+    reg_cmd->queue_cmd = queue;
     reg_cmd->n_args = args;
     reg_cmd->n_var_args = variable_args;
 }
@@ -204,6 +204,7 @@ void _serial_command::add_callback(char* cmd_name, CommandCallback callback) {
 
 void _serial_command::clear_queue() {
     cmd_queue.clear();
+    TMCMessageAgent.queue_message(INFO, "Command queue: %i / %i", cmd_queue.size(), cmd_queue.max_size());
 }
 
 void _serial_command::parse(char* data) {
@@ -225,13 +226,11 @@ void _serial_command::parse(char* data) {
             if (arg_list.get_num_args() == n_args) {
                 cmd->args.copy(&arg_list);
                 
-                if (!cmd->queue || (cmd_queue.empty() && TMCStepperControl.check_state(IDLE, HOME_FIRST))) {
+                if (!cmd->queue_cmd || (cmd_queue.empty() && TMCStepperControl.check_state(IDLE, HOME_FIRST))) {
                     run_cmd(cmd);
                 } else if (!cmd_queue.full()) {
                     cmd_queue.push(cmd);
-
                     TMCMessageAgent.post_message(INFO, "Command queue: %i / %i", cmd_queue.size(), cmd_queue.max_size());
-
                 } else {
                     TMCMessageAgent.post_message(ERROR, "Cannot queue cmd <%s>; command queue is full", data);
                 }

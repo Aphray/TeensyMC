@@ -31,7 +31,7 @@ class FixedQueue {
         inline bool empty();
 
         // get the free space in the queue
-        inline uint16_t free();
+        inline uint16_t free_space();
 
         // get the number of items in the queue
         inline uint16_t size();
@@ -91,7 +91,7 @@ bool FixedQueue<T, SIZE>::empty() {
 }
 
 template<typename T, uint16_t SIZE>
-uint16_t FixedQueue<T, SIZE>::free() {
+uint16_t FixedQueue<T, SIZE>::free_space() {
     return SIZE - count;
 }
 
