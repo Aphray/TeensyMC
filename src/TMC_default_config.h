@@ -18,7 +18,7 @@
 // buffer size for the serial RX data
 #define RX_BUFFER_SIZE 1024
 
-// buffer size for each command in the command queue
+// max size of the command queue
 #define CMD_QUEUE_SIZE  10
 
 // buffer size for message agent
