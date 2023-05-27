@@ -182,8 +182,9 @@ void _serial_command::parse(char* data) {
             if (arg_list.get_num_args() == n_args) {
 
                 _command cmd;
-                cmd.name = cmd_entry->name;
-                cmd.callbacks = cmd_entry->callbacks;
+                cmd.entry = cmd_entry;
+                // cmd.name = cmd_entry->name;
+                // cmd.callbacks = cmd_entry->callbacks;
                 cmd.args.copy(&arg_list);
 
                 // cmd_entry->args.copy(&arg_list);
@@ -218,15 +219,14 @@ void _serial_command::run_cmd(char* cmd) {
 void _serial_command::run_cmd(_command cmd) {
     // execute the callbacks and pass the arguments
 
-    while (cmd.callbacks != nullptr) {
-        CommandCallback callback = *(cmd.callbacks);
-        callback(cmd.name, &(cmd.args));
-        cmd.callbacks++;
-    }
-
-
-    // for (uint8_t i = 0; i < cmd->n_callbacks; i ++) {
-    //     (*cmd->callbacks[i])(cmd->name, &cmd->args);
-    //     cmd->args.reset();
+    // while (cmd.callbacks != nullptr) {
+    //     CommandCallback callback = *(cmd.callbacks);
+    //     callback(cmd.name, &(cmd.args));
+    //     cmd.callbacks++;
     // }
+
+    for (uint8_t i = 0; i < cmd.entry->n_callbacks; i ++) {
+        (*cmd.entry->callbacks[i])(cmd.entry->name, &cmd.args);
+        cmd.args.reset();
+    }
 }
