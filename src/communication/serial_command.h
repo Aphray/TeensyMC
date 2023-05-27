@@ -34,19 +34,6 @@ struct _command {
 
     ArgList args;
     _command_entry* entry;
-
-    // char* name;
-
-    // bool queue_cmd;
-
-    // uint8_t n_args;
-    // uint8_t* n_var_args;
-    // uint8_t n_callbacks;
-
-    
-    // CommandCallback callbacks[MAX_USER_CALLBACKS];
-
-    // CommandCallback* callbacks;
 };
 
 
