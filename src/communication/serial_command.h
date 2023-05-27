@@ -5,48 +5,19 @@
 #include <queue>
 
 #include "message_agent.h"
+#include "arg_list.h"
 #include "../config.h"
 #include "../utility/fixed_queue.h"
-
 
 
 bool argtoi(char* arg, int* res);
 
 bool argtof(char* arg, float* res);
 
-
-class ArgList {
-    public:
-        ArgList() {};
-        ArgList(char* args);
-
-        // get the next argument in the list
-        char* next();
-
-        // reset the indexer
-        void reset();
-
-        // returns the number of arguments 
-        uint8_t get_num_args();
-
-        // copy from another argument list
-        void copy(ArgList* arg_list);
-    
-    private:
-        uint8_t arg_idx;
-        uint8_t num_args;
-
-        char args[CMD_MAX_ARGS][ARG_BUFFER_SIZE];
-
-        // split the args c-string into 
-        void split_args(char* args);
-};
-
-
 typedef void (*CommandCallback)(char*, ArgList*);
 
 
-struct _command {
+struct _command_entry {
     char name[CMD_CHAR_MAX + 1];
 
     bool queue_cmd;
@@ -55,8 +26,23 @@ struct _command {
     uint8_t* n_var_args;
     uint8_t n_callbacks;
 
-    ArgList args;
     CommandCallback callbacks[MAX_USER_CALLBACKS];
+};
+
+
+struct _command {
+    char* name;
+
+    // bool queue_cmd;
+
+    // uint8_t n_args;
+    // uint8_t* n_var_args;
+    // uint8_t n_callbacks;
+
+    ArgList args;
+    // CommandCallback callbacks[MAX_USER_CALLBACKS];
+
+    CommandCallback* callbacks;
 };
 
 
@@ -93,8 +79,8 @@ class _serial_command {
         Stream* stream;
 
         uint8_t n_cmds;
-        _command cmd_registry[MAX_USER_COMMANDS];
-        FixedQueue<_command*, CMD_QUEUE_SIZE> cmd_queue;
+        _command_entry cmd_registry[MAX_USER_COMMANDS];
+        FixedQueue<_command, CMD_QUEUE_SIZE> cmd_queue;
 
         char rx_buffer[RX_BUFFER_SIZE];
 
@@ -102,7 +88,7 @@ class _serial_command {
         void parse(char* data);
 
         // runs the command with the arguments
-        void run_cmd(_command* cmd);
+        void run_cmd(_command cmd);
 };
 
 extern _serial_command TMCSerialCommand;
