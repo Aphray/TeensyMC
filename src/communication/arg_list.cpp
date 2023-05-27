@@ -1,5 +1,10 @@
 #include "arg_list.h"
 
+ArgList::ArgList() {
+    num_args = 0;
+    arg_idx = 0;
+}
+
 ArgList::ArgList(char* args_) {
     num_args = 0;
     arg_idx = 0;
