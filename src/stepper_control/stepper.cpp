@@ -244,3 +244,8 @@ void Stepper::constrain_speed_accel(Stepper* master, float* start_speed, float* 
 bool Stepper::cmp_delta(Stepper* a, Stepper* b) {
     return a->delta > b->delta;
 }
+
+void Stepper::init_delta_rem(Stepper* master) {
+    if (this == master) return;
+    delta_rem = delta - master->delta;
+}

@@ -130,6 +130,8 @@ class Stepper {
         // for sorting the steppers by distance
         static bool cmp_delta(Stepper* a, Stepper* b);
 
+        void init_delta_rem(Stepper* master);
+
     private:
         const uint8_t dir_pin;
         const uint8_t step_pin;

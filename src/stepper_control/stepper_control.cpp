@@ -54,6 +54,9 @@ void _stepper_control::begin() {
 void _stepper_control::sort_steppers() {
     std::sort(steppers_sort, steppers_sort + num_steppers, Stepper::cmp_delta);
     master_stepper = steppers_sort[0];
+    for (uint8_t n = 0; n < num_steppers; n++) {
+        steppers_sort[n]->init_delta_rem(master_stepper);
+    }
 }
 
 void _stepper_control::add_stepper(Stepper& stepper) {
