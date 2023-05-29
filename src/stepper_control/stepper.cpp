@@ -122,6 +122,7 @@ float Stepper::get_position() {
 void Stepper::set_zero() {
     GUARD_ACTIVE;
     position = 0;
+    target_position = 0;
 }
 
 void Stepper::set_direction(int8_t dir_) {

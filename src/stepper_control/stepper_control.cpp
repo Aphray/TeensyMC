@@ -25,7 +25,7 @@ void _stepper_control::begin() {
     TMCSerialCommand.register_command("PROBE", 4);
     TMCSerialCommand.register_command("HOME", 3);
     TMCSerialCommand.register_command("FAULT", 0, false);
-    TMCSerialCommand.register_command("ZERO", 0);
+    TMCSerialCommand.register_command("ZERO", 1);
     TMCSerialCommand.register_command("STOP", 0, false);
     TMCSerialCommand.register_command("HALT", 0, false);
     TMCSerialCommand.register_command("LIMIT", 3);
