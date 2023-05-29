@@ -293,7 +293,7 @@ void _stepper_control::step_ISR() {
                         // homing complete
                         master_stepper->homing_complete();
 
-                        change_state(IDLE);
+                        change_state(steppers_homed() ? IDLE : HOME_FIRST);
                         finish_move();
                         TMCEventManager.queue_event(HOMING_COMPLETE);
                         TMCMessageAgent.queue_message(INFO, "Homing: complete on axis %i", master_stepper->get_axis_id());
