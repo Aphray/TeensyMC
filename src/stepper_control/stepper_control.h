@@ -8,6 +8,7 @@
 #include "../communication/enum_factory.h"
 #include "../communication/message_agent.h"
 
+using namespace TeensyTimerTool;
 
 #define STEPPER_STATES(X)   \
     X(IDLE)                 \
@@ -24,7 +25,6 @@ enum StepperState {
     STEPPER_STATES(MAKE_ENUM)
 };
 
-using namespace TeensyTimerTool;
 
 class _stepper_control {
 
@@ -139,6 +139,8 @@ class _stepper_control {
         PeriodicTimer step_timer;
         PeriodicTimer hold_timer;
 
+        uint32_t hold_ms;
+
         // does a single step of the Bresenham algorithm
         bool do_bresenham_step() __always_inline;
 
@@ -147,9 +149,6 @@ class _stepper_control {
         // ISRs for the stepping and pulsing
         void step_ISR();
         void pulse_ISR();
-
-        uint32_t hold_ms;
-
         void hold_ISR();
 
         void run_steppers(float speed, float accel);

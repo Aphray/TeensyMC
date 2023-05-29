@@ -21,6 +21,9 @@
 // max size of the command queue
 #define CMD_QUEUE_SIZE  10
 
+// max size of the move planner queue
+#define PLANNER_QUEUE_SIZE 100
+
 // buffer size for message agent
 #define MESSAGE_BUFFER_SIZE 1024
 
