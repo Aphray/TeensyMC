@@ -245,6 +245,7 @@ inline uint8_t Stepper::get_axis_id() {
 
 inline void Stepper::finish_move() {
     delta = 0;
+    delta_rem = -1;
     jogging = false;
     homing_probing = false;
     target_position = position;

@@ -17,6 +17,7 @@ Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_, uint8_t en_pin_): dir_pin(
     axis = count++;
     
     delta = 0;
+    delta_rem = -1;
     position = 0;
     target_position = 0;
 
@@ -145,6 +146,7 @@ void Stepper::set_target_rel_steps(int32_t rel_pos) {
         target_position = (target_position > max_travel) ? max_travel : min_travel;
     }
 
+    delta_rem = 0;
     delta = abs(target_position - position);
 
     TMCStepperControl.sort_steppers();
