@@ -29,7 +29,7 @@ void _stepper_control::begin() {
     TMCSerialCommand.register_command("STOP", 0, false);
     TMCSerialCommand.register_command("HALT", 0, false);
     TMCSerialCommand.register_command("LIMIT", 3);
-    TMCSerialCommand.register_command("JOG", 2, &num_steppers);
+    TMCSerialCommand.register_command("JOG", 2, false, &num_steppers);
     TMCSerialCommand.register_command("JOGC", 0, false);
     TMCSerialCommand.register_command("HOLD", 1);
     TMCSerialCommand.register_command("HOLDC", 0, false);
