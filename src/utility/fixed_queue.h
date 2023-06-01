@@ -12,17 +12,23 @@ class FixedQueue {
             count = 0;
         }
 
-        // get the first item
+        // remove and return first item
         T pop();
 
+        // remove and return first item with interrupts disabled
+        T pop_no_interrupts();
+
         // get a pointer to the first item
-        T* first_item();
+        T* peek_first();
 
         // get a pointer to the last item
-        T* last_item();
+        T* peek_last();
 
         // add an item if there is space in the queue
         void push(const T& item);
+
+        // add item to queue with interrupts disabled
+        void push_no_interrupts(const T& item);
 
         // clear all items from queue
         inline void clear();
@@ -62,13 +68,21 @@ T FixedQueue<T, SIZE>::pop() {
 }
 
 template<typename T, uint16_t SIZE>
-T* FixedQueue<T, SIZE>::first_item() {
+T FixedQueue<T, SIZE>::pop_no_interrupts() {
+    noInterrupts();
+    T result = pop();
+    interrupts();
+    return result;
+}
+
+template<typename T, uint16_t SIZE>
+T* FixedQueue<T, SIZE>::peek_first() {
     if (empty()) return nullptr;
     return &(queue[tail]);
 }
 
 template<typename T, uint16_t SIZE>
-T* FixedQueue<T, SIZE>::last_item() {
+T* FixedQueue<T, SIZE>::peek_last() {
     if (empty()) return nullptr;
     return &(queue[head]);
 }
@@ -87,6 +101,13 @@ void FixedQueue<T, SIZE>::push(const T& item) {
     
     count++;
     head = (head + 1) % SIZE;
+}
+
+template<typename T, uint16_t SIZE>
+void FixedQueue<T, SIZE>::push_no_interrupts(const T& item) {
+    noInterrupts();
+    push(item);
+    interrupts();
 }
 
 template<typename T, uint16_t SIZE>
