@@ -92,7 +92,7 @@ void _serial_command::process_command_queue() {
     // if (TMCStepperControl.steppers_active() || TMCStepperControl.steppers_holding() || cmd_queue.empty()) return;
     if (!TMCStepperControl.check_state(IDLE, HOME_FIRST) || cmd_queue.empty()) return;
 
-    _command cmd = cmd_queue.pop();
+    Command cmd = cmd_queue.pop();
     run_cmd(cmd);
     TMCMessageAgent.post_message(INFO, "Command queue: %i / %i", cmd_queue.size(), cmd_queue.max_size());
 }
@@ -124,7 +124,7 @@ void _serial_command::register_command(char* cmd_name, uint8_t args, bool queue,
     }
 
     // register the command when it doesn't exist in the registry
-    _command_entry* reg_cmd = &cmd_registry[n_cmds++];
+    CommandEntry* reg_cmd = &cmd_registry[n_cmds++];
 
     // assign the command info
     strcpy(reg_cmd->name, cmd_name);
@@ -137,7 +137,7 @@ void _serial_command::register_command(char* cmd_name, uint8_t args, bool queue,
 void _serial_command::add_callback(char* cmd_name, CommandCallback callback) {
     // check to see if the command is exists
     for (uint8_t n = 0; n < n_cmds; n ++) {
-        _command_entry* cmd_entry = &(cmd_registry[n]);
+        CommandEntry* cmd_entry = &(cmd_registry[n]);
 
         if (STR_CMP(cmd_name, cmd_entry->name)) {
             if (cmd_entry->n_callbacks == MAX_USER_CALLBACKS) { 
@@ -170,7 +170,7 @@ void _serial_command::parse(char* data) {
 
     // loop through all the stored commands
     for (uint8_t n = 0; n < n_cmds; n++) {
-        _command_entry* cmd_entry = &(cmd_registry[n]);
+        CommandEntry* cmd_entry = &(cmd_registry[n]);
 
         // check if the parsed command matches a stored command
         if (STR_CMP(cmd_name, cmd_entry->name)) {
@@ -181,7 +181,7 @@ void _serial_command::parse(char* data) {
             // check if the argument count matches
             if (arg_list.get_num_args() == n_args) {
 
-                _command cmd;
+                Command cmd;
                 cmd.entry = cmd_entry;
                 // cmd.name = cmd_entry->name;
                 // cmd.callbacks = cmd_entry->callbacks;
@@ -216,7 +216,7 @@ void _serial_command::run_cmd(char* cmd) {
     parse(cmd);
 }
 
-void _serial_command::run_cmd(_command cmd) {
+void _serial_command::run_cmd(Command cmd) {
     // execute the callbacks and pass the arguments
 
     // while (cmd.callbacks != nullptr) {

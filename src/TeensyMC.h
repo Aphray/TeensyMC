@@ -1,12 +1,23 @@
 #pragma once
 
 #include "stepper_control/stepper.h"
-#include "communication/serial_command.h"
-#include "communication/message_agent.h"
+#include "communication/serial_comm.h"
 #include "stepper_control/stepper_control.h"
-#include "event_handling/event_manager.h"
+
+#define TMC TeensyMC
+#define TMCSerialComm TeensyMC::SerialComm
+#define TMCStepperCtrl TeensyMC::StepperControl
 
 
-void TMC_Begin();
+// namespace TMC = TeensyMC;
+// namespace TMCSerialComm = TeensyMC::SerialComm;
+// namespace TMCStepperControl = TeensyMC::StepperControl;
 
-void TMC_Run();
+
+namespace TeensyMC {
+    // initialize TeensyMC
+    void init();
+
+    // run the TeensyMC loop
+    void run();
+}

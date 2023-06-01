@@ -1,8 +1,6 @@
 #pragma once
 
-#include "../communication/serial_comm.h"
-
-using namespace TeensyMC::SerialComm;
+#include "../communication/serial_command.h"
 
 #define CALLBACK(name) void name##__cb(char* cmd, ArgList* args)
 

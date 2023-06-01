@@ -1,70 +1,19 @@
 
 #include "callbacks.h"
 #include "stepper_control.h"
-
-using namespace TeensyMC;
-using namespace TeensyMC::SerialComm;
-
-#define ASSERT_INACTIVE if (StepperControl::steppers_active()) { SerialComm::post_message(ERROR, "Command <%s> cannot run; steppers are active", cmd); return; }
-#define ASSERT_ACTIVE if (!StepperControl::steppers_active()) { SerialComm::post_message(ERROR, "Command <%s> cannot run; steppers are not active", cmd); return; }
-#define ASSERT_HOMED if (!StepperControl::steppers_homed()) { SerialComm::post_message(ERROR, "Command <%s> cannot run; steppers not homed", cmd); return; }
-
+#include "../communication/message_agent.h"
+#include "../communication/serial_command.h"
 
 inline void ARG_ERROR(char* arg) {
-    SerialComm::post_message(ERROR, "Command error; invalid argument (%s)", arg);
+    TMCMessageAgent.post_message(ERROR, "Command error; invalid argument (%s)", arg);
 }
 
+// #define ARG_ERROR(arg) TMCMessageAgent.post_message(ERROR, "Command error; invalid argument (%s)", arg); return;
 
-bool argtoi(char* arg, int* res) {
-    int8_t sign = 1;
+#define ASSERT_INACTIVE if (TMCStepperControl.steppers_active()) { TMCMessageAgent.post_message(ERROR, "Command <%s> cannot run; steppers are active", cmd); return; }
+#define ASSERT_ACTIVE if (!TMCStepperControl.steppers_active()) { TMCMessageAgent.post_message(ERROR, "Command <%s> cannot run; steppers are not active", cmd); return; }
+#define ASSERT_HOMED if (!TMCStepperControl.steppers_homed()) { TMCMessageAgent.post_message(ERROR, "Command <%s> cannot run; steppers not homed", cmd); return; }
 
-    if (arg == nullptr) { return false; }
-
-    for (uint8_t n = 0; n < strlen(arg); n++) {
-        switch (arg[n]) {
-            case '-':
-            case '+':
-                if (n != 0) { return false; }
-                sign = (arg[n] == '+') ? 1 : -1;
-                break;
-            case '.':
-                return false;
-            default:
-                if (!isdigit(arg[n])) { return false; }
-                break;
-        }
-    }
-
-    *res = atoi(arg);
-    return true;
-
-}
-
-bool argtof(char* arg, float* res) {
-    int8_t sign = 1;
-    uint8_t decimals = 0;
-
-    if (arg == nullptr) { return false; }
-
-    for (uint8_t n = 0; n < strlen(arg); n++) {
-        switch (arg[n]) {
-            case '-':
-            case '+':
-                if (n != 0) { return false; }
-                sign = (arg[n] == '+') ? 1 : -1;
-                break;
-            case '.':
-                if (++decimals > 1) { return false; }
-                break;
-            default:
-                if (!isdigit(arg[n])) { return false; }
-                break;
-        }
-    }
-
-    *res = atof(arg);
-    return true;
-}
 
 CALLBACK(ENABL) {
     // enable command
@@ -77,7 +26,7 @@ CALLBACK(ENABL) {
 
     if (ax_c[0] == ARG_SKIP_CHAR) { 
         en_all = true; 
-    } else if (!argtoi(ax_c, &ax_i) || ax_i < 0 || ax_i > StepperControl::get_num_steppers()) {
+    } else if (!argtoi(ax_c, &ax_i) || ax_i < 0 || ax_i > TMCStepperControl.get_num_steppers()) {
         ARG_ERROR(ax_c);
         return;
     } 
@@ -89,12 +38,10 @@ CALLBACK(ENABL) {
     }
 
     if (en_all) {
-        for (uint8_t n = 0; n < StepperControl::get_num_steppers(); n ++) {
-            StepperControl::get_stepper(n)->enable(en_i > 0 ? true : false);
+        for (uint8_t n = 0; n < TMCStepperControl.get_num_steppers(); n ++) {
+            TMCStepperControl.get_stepper(n)->enable(en_i > 0 ? true : false);
         }
-    } else { 
-        StepperControl::get_stepper(ax_i)->enable(en_i > 0 ? true : false); 
-    }
+    } else { TMCStepperControl.get_stepper(ax_i)->enable(en_i > 0 ? true : false); }
 }
 
 
@@ -104,9 +51,9 @@ CALLBACK(MOVE) {
     ASSERT_HOMED;
     ASSERT_INACTIVE;
 
-    for (uint8_t n = 0; n < StepperControl::get_num_steppers(); n ++) {
+    for (uint8_t n = 0; n < TMCStepperControl.get_num_steppers(); n ++) {
 
-        Stepper* stepper = StepperControl::get_stepper(n);
+        Stepper* stepper = TMCStepperControl.get_stepper(n);
 
         char* pos_c = args->next();
         float pos_f = 0;
@@ -145,15 +92,15 @@ CALLBACK(MOVE) {
         return;
     }
 
-    // char* accel_c = args->next();
-    // float accel_f = 0;
+    char* accel_c = args->next();
+    float accel_f = 0;
 
-    // if (!argtof(accel_c, &accel_f)) {
-    //     ARG_ERROR(accel_c);
-    //     return;
-    // }
+    if (!argtof(accel_c, &accel_f)) {
+        ARG_ERROR(accel_c);
+        return;
+    }
 
-    StepperControl::start_move(speed_f);
+    TMCStepperControl.start_move(speed_f, accel_f);
 }
 
 CALLBACK(PROBE) {
@@ -165,7 +112,7 @@ CALLBACK(PROBE) {
     char* ax_c = args->next();
     char* dir_c = args->next();
     char* speed_c = args->next();
-    // char* accel_c = args->next();
+    char* accel_c = args->next();
 
     int ax_i = 0;
     if (!argtoi(ax_c, &ax_i)) {
@@ -185,13 +132,13 @@ CALLBACK(PROBE) {
         return;
     }
 
-    // float accel_f = 0;
-    // if (!argtof(accel_c, &accel_f)) {
-    //     ARG_ERROR(accel_c);
-    //     return;
-    // }
+    float accel_f = 0;
+    if (!argtof(accel_c, &accel_f)) {
+        ARG_ERROR(accel_c);
+        return;
+    }
 
-    StepperControl::start_probe(ax_i, speed_f, dir_i);
+    TMCStepperControl.start_probe(ax_i, speed_f, accel_f, dir_i);
 }
 
 CALLBACK(HOME) {
@@ -201,7 +148,7 @@ CALLBACK(HOME) {
 
     char* ax_c = args->next();
     char* speed_c = args->next();
-    // char* accel_c = args->next();
+    char* accel_c = args->next();
 
     int ax_i = 0;
     if (!argtoi(ax_c, &ax_i) || ax_i < 0) {
@@ -215,13 +162,13 @@ CALLBACK(HOME) {
         return;
     }
 
-    // float accel_f = 0;
-    // if (!argtof(accel_c, &accel_f)) {
-    //     ARG_ERROR(accel_c);
-    //     return;
-    // }
+    float accel_f = 0;
+    if (!argtof(accel_c, &accel_f)) {
+        ARG_ERROR(accel_c);
+        return;
+    }
 
-    StepperControl::start_home(ax_i, speed_f);
+    TMCStepperControl.start_home(ax_i, speed_f, accel_f);
 }
 
 CALLBACK(CFAULT) {
@@ -229,7 +176,7 @@ CALLBACK(CFAULT) {
 
     ASSERT_INACTIVE;
 
-    StepperControl::clear_fault();
+    TMCStepperControl.clear_fault();
 }
 
 CALLBACK(ZERO) {
@@ -240,12 +187,12 @@ CALLBACK(ZERO) {
     char* ax_c = args->next();
 
     int ax_i = 0;
-    if (!argtoi(ax_c, &ax_i) || ax_i < 0 || ax_i >= StepperControl::get_num_steppers()) {
+    if (!argtoi(ax_c, &ax_i) || ax_i < 0 || ax_i >= TMCStepperControl.get_num_steppers()) {
         ARG_ERROR(ax_c);
         return;
     }
 
-    StepperControl::zero_stepper(ax_i);
+    TMCStepperControl.zero_stepper(ax_i);
 }
 
 CALLBACK(STOP) {
@@ -253,8 +200,8 @@ CALLBACK(STOP) {
 
     ASSERT_ACTIVE;
     
-    SerialComm::clear_command_queue();
-    StepperControl::stop();
+    TMCSerialCommand.clear_queue();
+    TMCStepperControl.stop();
 }
 
 CALLBACK(HALT) {
@@ -262,8 +209,8 @@ CALLBACK(HALT) {
 
     ASSERT_ACTIVE;
 
-    SerialComm::clear_command_queue();
-    StepperControl::halt();
+    TMCSerialCommand.clear_queue();
+    TMCStepperControl.halt();
 }
 
 CALLBACK(LIMIT) {
@@ -272,12 +219,12 @@ CALLBACK(LIMIT) {
     char* ax_c = args->next();
 
     int ax_i = 0;
-    if (!argtoi(ax_c, &ax_i) || ax_i < 0 || ax_i >= StepperControl::get_num_steppers()) {
+    if (!argtoi(ax_c, &ax_i) || ax_i < 0 || ax_i >= TMCStepperControl.get_num_steppers()) {
         ARG_ERROR(ax_c);
         return;
     }
 
-    Stepper* stepper = StepperControl::get_stepper(ax_i);
+    Stepper* stepper = TMCStepperControl.get_stepper(ax_i);
 
     for (uint8_t n = 0; n < 2; n++) {
         char* lim_c = args->next();
@@ -328,10 +275,10 @@ CALLBACK(JOG) {
     ASSERT_HOMED;
 
     float sum_sqr;
-    float unit_vectors[StepperControl::get_num_steppers()] = {0};
+    float unit_vectors[TMCStepperControl.get_num_steppers()] = {0};
 
     for (uint8_t s = 0; s < 2; s++) {
-        for (uint8_t n = 0; n < StepperControl::get_num_steppers(); n ++) {
+        for (uint8_t n = 0; n < TMCStepperControl.get_num_steppers(); n ++) {
             if (s == 0) {
                 char* pos_c = args->next();
                 float pos_f = 0;
@@ -359,20 +306,20 @@ CALLBACK(JOG) {
         return;
     }
 
-    // char* accel_c = args->next();
-    // float accel_f = 0;
+    char* accel_c = args->next();
+    float accel_f = 0;
 
-    // if (!argtof(accel_c, &accel_f)) {
-    //     ARG_ERROR(accel_c);
-    //     return;
-    // }
+    if (!argtof(accel_c, &accel_f)) {
+        ARG_ERROR(accel_c);
+        return;
+    }
 
-    StepperControl::start_jogging(unit_vectors, speed_f);
+    TMCStepperControl.start_jogging(unit_vectors, speed_f, accel_f);
 }
 
 
 CALLBACK(JOGC) {
-    StepperControl::stop_jogging();
+    TMCStepperControl.stop_jogging();
 }
 
 
@@ -389,10 +336,10 @@ CALLBACK(HOLD) {
         return;
     }
 
-    StepperControl::hold(ms_i);
+    TMCStepperControl.hold(ms_i);
 }
 
 
 CALLBACK(HOLDC) {
-    StepperControl::clear_hold();
+    TMCStepperControl.clear_hold();
 }

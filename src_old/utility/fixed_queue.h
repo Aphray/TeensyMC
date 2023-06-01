@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include "../utility/fixed_queue.h"
 
 template<typename T, uint16_t SIZE>
 class FixedQueue {
@@ -16,10 +17,7 @@ class FixedQueue {
         T pop();
 
         // get a pointer to the first item
-        T* first_item();
-
-        // get a pointer to the last item
-        T* last_item();
+        T* peek();
 
         // add an item if there is space in the queue
         void push(const T& item);
@@ -62,15 +60,9 @@ T FixedQueue<T, SIZE>::pop() {
 }
 
 template<typename T, uint16_t SIZE>
-T* FixedQueue<T, SIZE>::first_item() {
+T* FixedQueue<T, SIZE>::peek() {
     if (empty()) return nullptr;
     return &(queue[tail]);
-}
-
-template<typename T, uint16_t SIZE>
-T* FixedQueue<T, SIZE>::last_item() {
-    if (empty()) return nullptr;
-    return &(queue[head]);
 }
 
 template<typename T, uint16_t SIZE>

@@ -18,9 +18,6 @@
 // buffer size for the serial RX data
 #define RX_BUFFER_SIZE 1024
 
-// max size of the message queue
-#define MSG_QUEUE_SIZE 10
-
 // max size of the command queue
 #define CMD_QUEUE_SIZE  10
 
@@ -65,8 +62,6 @@
 
 #define PROBING_OVERSHOOT 2.0
 
-// time of acceleration in milliseconds
-#define ACCELERATION_TIME 50.0
 
 // to enable/disable homing steppers before movement (of after any fault condition)
 // #define HOME_STEPPERS_FIRST
