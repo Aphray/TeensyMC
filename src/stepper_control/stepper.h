@@ -82,13 +82,13 @@ namespace TeensyMC {
             void prepare_homing();
 
             // check if homing is complete (1 -> complete, 0 -> incomplete, -1 -> error)
-            __always_inline int8_t homing_status() ;
+            inline int8_t homing_status();
 
             // set if the axis requires homing
             void enable_homing(bool enable);
 
             // called on homing complete to update the position
-            void homing_complete();
+            inline void homing_complete();
 
             // returns if the stepper has been homed
             bool homed();
@@ -103,29 +103,29 @@ namespace TeensyMC {
             void prepare_probing(int8_t dir);
 
             // check if probing is complete (1 -> complete, 0 -> incomplete, -1 -> error)
-            __always_inline int8_t probing_status();
+            inline int8_t probing_status();
 
             // puts the stepper in jogging mode
             void prepare_jogging(float unit_vector);
 
             // returns the axis number
-            __always_inline uint8_t get_axis_id();
+            inline uint8_t get_axis_id();
 
             // makes sure the speed (in steps/sec) and acceleration (in steps/sec^2) are within the limits of the stepper
             // this does not need to be called manually; it is instead handled from within TMCStepperControl.start_move(...)
             void constrain_speed_accel(Stepper* master, float* start_speed, float* speed, float* accel);
 
             // resets internal counters; does not need to be called manually, it is called inside the stepper ISR
-            __always_inline void finish_move();
+            inline void finish_move();
 
             // do a single step; does not need to be called manually, it is called inside the stepper ISR
-            __always_inline bool step(Stepper* master);
+            inline bool step(Stepper* master);
 
             // clear the step pin; does not need to be called manually, it is called inside the stepper ISR
-            __always_inline void clear_step();
+            inline void clear_step();
 
             // returns if the target has been reached
-            __always_inline bool move_complete();
+            inline bool move_complete();
 
             // for sorting the steppers by distance
             static bool cmp_delta(Stepper* a, Stepper* b);

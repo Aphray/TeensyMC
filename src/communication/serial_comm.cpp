@@ -20,6 +20,7 @@ CommandEntry cmd_registry[MAX_USER_COMMANDS];
 FixedQueue<Command, CMD_QUEUE_SIZE> cmd_queue;
 FixedQueue<Message, MSG_QUEUE_SIZE> message_queue;
 
+
 // parse the recieved data and execute any attached commands
 void parse(char* data) {
     post_message(DEBUG, "Echo: <%s>", data);
@@ -43,7 +44,7 @@ void parse(char* data) {
                 cmd.entry = cmd_entry;
                 cmd.args.copy(&arg_list);
                 
-                if (!cmd_entry->queue_cmd || (cmd_queue.empty() && StepperControl::check_state(IDLE, HOME_FIRST))) {
+                if (!cmd_entry->queue_cmd) {
                     cmd.run();
                 } else if (!cmd_queue.full()) {
                     cmd_queue.push(cmd);
@@ -117,7 +118,6 @@ void SerialComm::internal::poll_serial() {
 }
 
 void SerialComm::internal::process_command_queue() {
-    // if (TMCStepperControl.steppers_active() || TMCStepperControl.steppers_holding() || cmd_queue.empty()) return;
     if (!StepperControl::check_state(IDLE, HOME_FIRST) || cmd_queue.empty()) return;
 
     Command cmd = cmd_queue.pop();

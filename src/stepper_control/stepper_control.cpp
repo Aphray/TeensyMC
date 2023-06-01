@@ -36,12 +36,12 @@ void pulse_ISR();   // step-pulse ISR
 void hold_ISR();    // hold timer ISR
 
 
-__always_inline inline void change_state(StepperState state_) {
+inline void change_state(StepperState state_) {
     prev_state = state;
     state = state_;
 }
 
-void restore_state() {
+inline void restore_state() {
     state = prev_state;
 }
 
@@ -92,7 +92,7 @@ void run_steppers(float speed) {
     step_timer.start();
 }
 
-void finish_move() {
+inline void finish_move() {
     step_timer.stop();
     hold_timer.stop();
     reset_accelerator();
@@ -376,7 +376,6 @@ void step_ISR() {
         case JOGGING:
         case MOVING:
         {
-
             float period = compute_next_step_period();
             step_timer.setPeriod(period); 
 

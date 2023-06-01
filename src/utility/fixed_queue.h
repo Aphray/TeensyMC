@@ -134,4 +134,3 @@ template<typename T, uint16_t SIZE>
 uint16_t FixedQueue<T, SIZE>::max_size() {
     return SIZE;
 }
-

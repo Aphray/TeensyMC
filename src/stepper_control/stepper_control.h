@@ -3,7 +3,6 @@
 #include "stepper.h"
 #include "../communication/enum_factory.h"
 
-
 #define STEPPER_STATES(X)   \
     X(IDLE)                 \
     X(FAULT)                \

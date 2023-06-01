@@ -58,6 +58,7 @@ namespace TeensyMC { namespace SerialComm {
     struct Command {
         ArgList args;
         CommandEntry* entry;
+        char* name = entry->name;
 
         // run the command
         void run();
