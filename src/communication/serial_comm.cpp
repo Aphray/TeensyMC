@@ -1,6 +1,7 @@
 
 #include "serial_comm.h"
 #include "../config.h"
+#include "../TeensyMC.h"
 #include "../utility/fixed_queue.h"
 #include "../stepper_control/stepper_control.h"
 
@@ -28,6 +29,12 @@ void parse(char* data) {
     // get the command and make the arguments list
     char* cmd_name = strtok(data, CMD_DELIMITER);
     ArgList arg_list(strtok(NULL, CMD_DELIMITER));
+
+    // if not initialized, and command isn't "INIT", post error and return
+    if (!TeensyMC::initialized() && !STR_CMP(cmd_name, "INIT")) {
+        post_message(ERROR, "Command <%s> cannot run; not initialized, run <INIT>", cmd_name);
+        return;
+    }
 
     for (uint8_t n = 0; n < num_commands; n++) {
         CommandEntry* cmd_entry = &(cmd_registry[n]);

@@ -16,7 +16,10 @@
 
 namespace TeensyMC {
     // initialize TeensyMC
-    void init();
+    void init(bool (*ext_init)() = nullptr);
+
+    // check if initialization was complete
+    bool initialized();
 
     // run the TeensyMC loop
     void run();
