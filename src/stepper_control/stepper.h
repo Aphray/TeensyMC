@@ -88,7 +88,7 @@ namespace TeensyMC {
             void enable_homing(bool enable);
 
             // called on homing complete to update the position
-            inline void homing_complete();
+            void homing_complete();
 
             // returns if the stepper has been homed
             bool homed();
