@@ -30,6 +30,8 @@ void TeensyMC::init() {
 }
 
 void TeensyMC::run() {
+    StepperControl::internal::process();
+    
     SerialComm::internal::process_command_queue();
     SerialComm::internal::post_queued_messages();
     SerialComm::internal::poll_serial();

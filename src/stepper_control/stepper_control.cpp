@@ -9,6 +9,10 @@
 
 #define ASSERT_IDLE if (state != IDLE) return
 
+#define NO_INTERRUPTS(body) { noInterrupts() \
+                              body \
+                              interrupts() }
+
 using namespace TeensyTimerTool;
 
 using namespace TeensyMC;
@@ -37,6 +41,8 @@ void hold_ISR();    // hold timer ISR
 
 
 inline void change_state(StepperState state_) {
+    if (state == FAULT) SerialComm::clear_command_queue();
+
     prev_state = state;
     state = state_;
 }
@@ -55,7 +61,6 @@ void run_steppers(float speed) {
     float start_speed = 1;
 
     speed = master_stepper->cvt_to_steps(speed);
-
     float accel = (speed - start_speed) * 1000.0 / ACCELERATION_TIME;
     // accel = master_stepper->cvt_to_steps(accel);
 
@@ -64,8 +69,6 @@ void run_steppers(float speed) {
         (*stepper)->constrain_speed_accel(master_stepper, &start_speed, &speed, &accel);
         stepper++;
     }
-
-    SerialComm::post_message(DEBUG, "%f", master_stepper->cvt_to_units(accel));
 
     prepare_accelerator((state == JOGGING ? std::numeric_limits<uint32_t>::max() : master_stepper->get_delta_steps()), start_speed, speed, accel);
     step_timer.setPeriod(1);
@@ -200,6 +203,55 @@ void StepperControl::internal::post_steppers_status(bool queue = false) {
         SerialComm::queue_message(STATUS, message); 
     } else { 
         SerialComm::post_message(STATUS, message); 
+    }
+}
+
+void StepperControl::internal::process() {
+    switch (state) {
+        case HOMING:
+            switch (master_stepper->homing_status()) {
+                case 1: // homing complete
+                    NO_INTERRUPTS(
+                        master_stepper->homing_complete();
+                        change_state(steppers_homed() ? IDLE : HOME_FIRST);
+                        finish_move();
+                        SerialComm::post_message(INFO, "Homing: complete on axis %i", master_stepper->get_axis_id());
+                    )
+                    return;
+                    
+                case -1: // homing error
+                    NO_INTERRUPTS(
+                        change_state(FAULT);
+                        finish_move();
+                        SerialComm::queue_message(CRITICAL, "Homing: failed on axis %i", master_stepper->get_axis_id());
+                    )
+                    return;
+
+                default:
+                    return;
+            }
+
+        case PROBING:
+            switch (master_stepper->probing_status()) {
+                case 1: // probing complete
+                    NO_INTERRUPTS(
+                        change_state(IDLE);
+                        finish_move();
+                        SerialComm::queue_message(INFO, "Probing: complete on axis %i", master_stepper->get_axis_id());
+                    )
+                    return;
+
+                case -1: // probing error
+                    NO_INTERRUPTS(
+                        change_state(FAULT);
+                        finish_move();
+                        SerialComm::queue_message(CRITICAL, "Probing: failed on axis %i", master_stepper->get_axis_id());
+                    )
+                    return;
+            }
+
+        default:
+            return;
     }
 }
 
@@ -382,68 +434,15 @@ void step_ISR() {
             if (!do_bresenham_step()) {
                 change_state(FAULT);
                 finish_move();
-                SerialComm::clear_command_queue();
-                // TMCEventManager.queue_event(FAULT_OCCURED);
                 SerialComm::queue_message(CRITICAL, "Fault: axis %i", fault_stepper->get_axis_id());
-
-            } else if (state == HOMING) {
-
-                switch (master_stepper->homing_status()) {
-                    case 1:
-                        // homing complete
-                        master_stepper->homing_complete();
-
-                        change_state(steppers_homed() ? IDLE : HOME_FIRST);
-                        finish_move();
-                        // TMCEventManager.queue_event(HOMING_COMPLETE);
-                        SerialComm::queue_message(INFO, "Homing: complete on axis %i", master_stepper->get_axis_id());
-                        break;
-                    case -1:
-                        // homing failure
-                        change_state(FAULT);
-                        finish_move();
-                        SerialComm::clear_command_queue();
-                        // TMCEventManager.queue_event(HOMING_FAILED);
-                        SerialComm::queue_message(CRITICAL, "Homing: failed on axis %i", master_stepper->get_axis_id());
-                        break;
-                    default:
-                        // no action
-                        break;
-                }
-
-            } else if (state == PROBING) {
-
-                switch (master_stepper->probing_status()) {
-                    case 1:
-                        // probing complete
-                        change_state(IDLE);
-                        finish_move();
-                        // TMCEventManager.queue_event(PROBING_COMPLETE);
-                        SerialComm::queue_message(INFO, "Probing: complete on axis %i", master_stepper->get_axis_id());
-                        break;
-                    case -1:
-                        // probing failure
-                        change_state(FAULT);
-                        finish_move();
-                        SerialComm::clear_command_queue();
-                        // TMCEventManager.queue_event(PROBING_FAILED);
-                        SerialComm::queue_message(CRITICAL, "Probing: failed on axis %i", master_stepper->get_axis_id());
-                        break;
-                    default:
-                        // no action
-                        break;
-                }
 
             } else if (master_stepper->move_complete() || (period < 0)) {
 
                 if (state == JOGGING) { 
-
                     // jog complete
-                    // TMCEventManager.queue_event(JOG_COMPLETE);
                     SerialComm::queue_message(INFO, "Jog: complete");
                 } else {
                     // move complete
-                    // TMCEventManager.queue_event(MOVE_COMPLETE);
                     SerialComm::queue_message(INFO, "Move: complete");
                 }
 
@@ -455,6 +454,100 @@ void step_ISR() {
         }
     }
 }
+
+// void step_ISR() {
+
+//     switch (state) {
+//         case HOME_FIRST:
+//         case FAULT:
+//         case IDLE:
+//             finish_move();
+//             break;
+
+//         case PROBING:
+//         case HOMING:
+//         case JOGGING:
+//         case MOVING:
+//         {
+//             float period = compute_next_step_period();
+//             step_timer.setPeriod(period); 
+
+//             if (!do_bresenham_step()) {
+//                 change_state(FAULT);
+//                 finish_move();
+//                 SerialComm::clear_command_queue();
+//                 // TMCEventManager.queue_event(FAULT_OCCURED);
+//                 SerialComm::queue_message(CRITICAL, "Fault: axis %i", fault_stepper->get_axis_id());
+
+//             } else if (state == HOMING) {
+
+//                 switch (master_stepper->homing_status()) {
+//                     case 1:
+//                         // homing complete
+//                         master_stepper->homing_complete();
+
+//                         change_state(steppers_homed() ? IDLE : HOME_FIRST);
+//                         finish_move();
+//                         // TMCEventManager.queue_event(HOMING_COMPLETE);
+//                         SerialComm::queue_message(INFO, "Homing: complete on axis %i", master_stepper->get_axis_id());
+//                         break;
+//                     case -1:
+//                         // homing failure
+//                         change_state(FAULT);
+//                         finish_move();
+//                         SerialComm::clear_command_queue();
+//                         // TMCEventManager.queue_event(HOMING_FAILED);
+//                         SerialComm::queue_message(CRITICAL, "Homing: failed on axis %i", master_stepper->get_axis_id());
+//                         break;
+//                     default:
+//                         // no action
+//                         break;
+//                 }
+
+//             } else if (state == PROBING) {
+
+//                 switch (master_stepper->probing_status()) {
+//                     case 1:
+//                         // probing complete
+//                         change_state(IDLE);
+//                         finish_move();
+//                         // TMCEventManager.queue_event(PROBING_COMPLETE);
+//                         SerialComm::queue_message(INFO, "Probing: complete on axis %i", master_stepper->get_axis_id());
+//                         break;
+//                     case -1:
+//                         // probing failure
+//                         change_state(FAULT);
+//                         finish_move();
+//                         SerialComm::clear_command_queue();
+//                         // TMCEventManager.queue_event(PROBING_FAILED);
+//                         SerialComm::queue_message(CRITICAL, "Probing: failed on axis %i", master_stepper->get_axis_id());
+//                         break;
+//                     default:
+//                         // no action
+//                         break;
+//                 }
+
+//             } else if (master_stepper->move_complete() || (period < 0)) {
+
+//                 if (state == JOGGING) { 
+
+//                     // jog complete
+//                     // TMCEventManager.queue_event(JOG_COMPLETE);
+//                     SerialComm::queue_message(INFO, "Jog: complete");
+//                 } else {
+//                     // move complete
+//                     // TMCEventManager.queue_event(MOVE_COMPLETE);
+//                     SerialComm::queue_message(INFO, "Move: complete");
+//                 }
+
+//                 change_state(IDLE);
+//                 finish_move();
+//             }
+
+//             pulse_timer.trigger(PULSE_WIDTH_US);
+//         }
+//     }
+// }
 
 void pulse_ISR() {
     Stepper** stepper = steppers_sort;

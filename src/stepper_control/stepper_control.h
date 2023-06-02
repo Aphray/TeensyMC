@@ -31,6 +31,9 @@ namespace TeensyMC { namespace StepperControl {
         // if 'queue' is set to true, the message is placed in the message queue and posted from the main loop (for usage inside ISR)
         void post_steppers_status(bool queue = false);
 
+        // stepper processing loop (homing, probing, etc.)
+        void process();
+
     } // namespace internal
 
     bool check_state(StepperState state);
