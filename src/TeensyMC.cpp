@@ -62,7 +62,7 @@ bool TeensyMC::initialized() {
 }
 
 void TeensyMC::run() {
-    if (initialized) {
+    if (init_complete) {
         StepperControl::internal::process();
         post_realtime_status();
     }
