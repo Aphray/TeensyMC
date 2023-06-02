@@ -392,6 +392,10 @@ float StepperControl::get_accelerator_speed() {
     return accelerator_speed();
 }
 
+bool StepperControl::steppers_accelerating() {
+    return accelerating();
+}
+
 uint8_t StepperControl::get_num_steppers() {
     return num_steppers;
 }
