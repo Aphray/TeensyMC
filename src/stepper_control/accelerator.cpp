@@ -44,6 +44,10 @@ float sigmoid_speed(uint32_t step) {
 
 #endif
 
+bool accelerating() {
+    return (current_step < accel_stop) || (current_step > decel_start);
+}
+
 float accelerator_speed() {
     return current_speed;
 }

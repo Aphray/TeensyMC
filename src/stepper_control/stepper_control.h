@@ -97,6 +97,9 @@ namespace TeensyMC { namespace StepperControl {
     // returns the speed (in steps/sec) of the accelerator
     float get_accelerator_speed();
 
+    // returns in the steppers are accelerating/decelerating
+    bool steppers_accelerating();
+
     // returns the stepper count
     uint8_t get_num_steppers();
 

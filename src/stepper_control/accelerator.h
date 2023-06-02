@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 
+bool accelerating();
 
 float accelerator_speed();
 
