@@ -21,6 +21,8 @@ CALLBACK(INIT) {
 void post_realtime_status() {
     static uint32_t last_millis = 0;
 
+    if (!init_complete) return;
+
     uint32_t period = IDLE_REPORT_MILLIS;
     
     if (StepperControl::steppers_active()) {
@@ -35,7 +37,7 @@ void post_realtime_status() {
     }
 }
 
-void TeensyMC::init(bool (*ext_init)() = nullptr) {
+void TeensyMC::init(bool (*ext_init)()) {
     static bool first_call = true;
 
     if (first_call) {
@@ -62,12 +64,11 @@ bool TeensyMC::initialized() {
 }
 
 void TeensyMC::run() {
-    if (init_complete) {
-        StepperControl::internal::process();
-        post_realtime_status();
-    }
+    StepperControl::internal::process();
     
     SerialComm::internal::process_command_queue();
     SerialComm::internal::post_queued_messages();
     SerialComm::internal::poll_serial();
+
+    post_realtime_status();
 }
