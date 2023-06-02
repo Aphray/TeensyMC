@@ -72,4 +72,4 @@
 // #define HOME_STEPPERS_FIRST
 
 // to enable/disable sin curve acceleration profile (disable to use linear acceleration)
-#define SIN_CURVE_ACCELERATION
+#define SIGMOID_CURVE_ACCELERATION
