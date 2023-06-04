@@ -441,7 +441,7 @@ void StepperControl::store_position(uint8_t index) {
     }
 
     stored_positions[index] = true;
-    SerialComm::post_message(INFO, "Position [%s] stored at index %i", buffer, index);
+    SerialComm::post_message(INFO, "Position stored: [%s] at index %i", buffer, index);
 }
 
 
