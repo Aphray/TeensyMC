@@ -34,7 +34,7 @@
 #define ARG_BUFFER_SIZE 16
 
 // max number of chars for the command tags
-#define CMD_CHAR_MAX 5
+#define CMD_CHAR_MAX 10
 
 // maximum number of registered user commands
 #define MAX_USER_COMMANDS 25
