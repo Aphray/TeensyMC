@@ -115,4 +115,10 @@ namespace TeensyMC { namespace StepperControl {
     // returns all of the registered steppers
     Stepper** get_all_steppers();
 
+    // store current position at index
+    void store_position(uint8_t index);
+
+    // recall position at index
+    void recall_position(uint8_t index);
+
 }} // namespace TeensyMC::StepperControl

@@ -44,3 +44,9 @@ CALLBACK(HOLD);
 
 // hold cancel/clear command
 CALLBACK(HOLDC);
+
+// store position command
+CALLBACK(STORE);
+
+// recall position command
+CALLBACK(RECALL);

@@ -120,6 +120,33 @@ namespace TeensyMC {
         return position * units_per_step;
     }
 
+    void Stepper::store_position(uint8_t index) {
+        if (index >= MAX_STORED_POSITIONS) {
+            SerialComm::post_message(ERROR, "Cannot store position; index %i out of bounds", index);
+            return;
+        }
+
+        StoredPosition item = stored_positions[index];
+        item.stored = true;
+        item.position = position;
+    }
+
+    void Stepper::recall_position(uint8_t index) {
+        if (index >= MAX_STORED_POSITIONS) {
+            SerialComm::post_message(ERROR, "Cannot recall position; index %i out of bounds", index);
+            return;
+        }
+
+        StoredPosition item = stored_positions[index];
+
+        if (!item.stored) {
+            SerialComm::post_message(ERROR, "Cannot recall position; no position stored at index %i");
+            return;
+        }
+
+        set_target_abs_steps(item.position);
+    }
+
     void Stepper::set_zero() {
         GUARD_ACTIVE;
         position = 0;

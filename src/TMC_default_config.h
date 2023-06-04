@@ -45,6 +45,9 @@
 // maximum number of registered user callbacks (for all events, in total)
 #define MAX_EVENT_CALLBACKS 20
 
+// maximum number of stored positions
+#define MAX_STORED_POSITIONS 10
+
 // max arguments (per command)
 #define CMD_MAX_ARGS 10
 

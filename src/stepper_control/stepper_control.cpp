@@ -34,6 +34,8 @@ PeriodicTimer hold_timer;
 uint8_t num_steppers = 0;
 uint32_t hold_ms = 0;
 
+bool stored_positions[MAX_STORED_POSITIONS] = { false };
+
 
 void step_ISR();    // stepper ISR
 void pulse_ISR();   // step-pulse ISR
@@ -142,6 +144,8 @@ void StepperControl::internal::begin() {
     SerialComm::register_command("JOGC", 0, false);
     SerialComm::register_command("HOLD", 1);
     SerialComm::register_command("HOLDC", 0, false);
+    SerialComm::register_command("STORE", 1);
+    SerialComm::register_command("RECALL", 1);
 
     // attach callbacks
     SerialComm::add_callback("ENABL", &ENABL__cb);
@@ -157,6 +161,8 @@ void StepperControl::internal::begin() {
     SerialComm::add_callback("JOGC", &JOGC__cb);
     SerialComm::add_callback("HOLD", &HOLD__cb);
     SerialComm::add_callback("HOLDC", &HOLDC__cb);
+    SerialComm::add_callback("STORE", &STORE__cb);
+    SerialComm::add_callback("RECALL", &RECALL__cb);
 }
 
 void StepperControl::internal::sort_steppers() {
@@ -415,6 +421,45 @@ Stepper* StepperControl::get_stepper(uint8_t axis) {
 Stepper** StepperControl::get_all_steppers() {
     return steppers;
 }
+
+void StepperControl::store_position(uint8_t index) {
+    if (index >= MAX_STORED_POSITIONS) {
+        SerialComm::post_message(ERROR, "Cannot store position; index %i out of bounds", index);
+        return;
+    }
+
+    // float stored_pos[num_steppers];
+    char buffer[7 * num_steppers + num_steppers];
+
+    for (uint8_t n = 0; n < num_steppers; n ++) {
+        steppers[n]->store_position(index);
+        sprintf(buffer + strlen(buffer), "%f%s", steppers[n]->get_position(), (n < (num_steppers - 1) ? "," : ""));
+    }
+
+    SerialComm::post_message(INFO, "Position [%s] stored at index %i", buffer, index);
+}
+
+
+void StepperControl::recall_position(uint8_t index) {
+    if (index >= MAX_STORED_POSITIONS) {
+        SerialComm::post_message(ERROR, "Cannot store position; index %i out of bounds", index);
+        return;
+    }
+
+    bool stored = stored_positions[index];
+    if (!stored) {
+        SerialComm::post_message(ERROR, "Cannot recall position; no position stored at index %i", index);
+        return;
+    }
+
+    Stepper** stepper = steppers;
+    while(*stepper) {
+        (*stepper)->recall_position(index);
+        stepper++;
+    }
+
+}
+
 
 // ISRs
 

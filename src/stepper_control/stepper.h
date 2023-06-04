@@ -1,6 +1,8 @@
 #pragma once
 
 #include <Arduino.h>
+#include "../config.h"
+
 
 namespace TeensyMC {
 
@@ -65,6 +67,12 @@ namespace TeensyMC {
 
             // returns the current position (in units)
             float get_position();
+
+            // stores the current position with the index
+            void store_position(uint8_t index);
+
+            // recall to stored position at index
+            void recall_position(uint8_t index);
 
             // returns the (mapped) speed (in units/sec)
             float get_speed();
@@ -133,6 +141,12 @@ namespace TeensyMC {
             void init_delta_rem(Stepper* master);
 
         private:
+
+            struct StoredPosition{
+                bool stored;
+                int32_t position;
+            };
+
             const uint8_t dir_pin;
             const uint8_t step_pin;
             const uint8_t en_pin;
@@ -155,6 +169,8 @@ namespace TeensyMC {
             uint32_t steps_traveled;
             int32_t target_position;
             volatile int32_t position;
+
+            StoredPosition stored_positions[MAX_STORED_POSITIONS];
 
             int32_t min_travel;
             int32_t max_travel;

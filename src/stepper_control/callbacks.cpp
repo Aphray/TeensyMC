@@ -396,3 +396,33 @@ CALLBACK(HOLD) {
 CALLBACK(HOLDC) {
     StepperControl::clear_hold();
 }
+
+CALLBACK(STORE) {
+    ASSERT_INACTIVE;
+    ASSERT_HOMED;
+
+    char* idx_c = args->next();
+    int idx_i = 0;
+
+    if (!argtoi(idx_c, &idx_i) || idx_i < 0) {
+        ARG_ERROR(idx_c);
+        return;
+    }
+
+    StepperControl::store_position(idx_i);
+}
+
+CALLBACK(RECALL) {
+    ASSERT_INACTIVE;
+    ASSERT_HOMED;
+
+    char* idx_c = args->next();
+    int idx_i = 0;
+
+    if (!argtoi(idx_c, &idx_i) || idx_i < 0) {
+        ARG_ERROR(idx_c);
+        return;
+    }
+
+    StepperControl::recall_position(idx_i);
+}
