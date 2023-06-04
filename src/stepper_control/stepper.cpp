@@ -126,9 +126,9 @@ namespace TeensyMC {
             return;
         }
 
-        StoredPosition item = stored_positions[index];
-        item.stored = true;
-        item.position = position;
+        StoredPosition* item = &(stored_positions[index]);
+        item->stored = true;
+        item->position = position;
     }
 
     void Stepper::recall_position(uint8_t index) {

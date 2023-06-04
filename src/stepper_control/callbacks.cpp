@@ -424,5 +424,13 @@ CALLBACK(RECALL) {
         return;
     }
 
-    StepperControl::recall_position(idx_i);
+    char* speed_c = args->next();
+    float speed_f = 0;
+
+    if (!argtof(speed_c, &speed_f)) {
+        ARG_ERROR(speed_c);
+        return;
+    }
+
+    StepperControl::recall_position(idx_i, speed_f);
 }

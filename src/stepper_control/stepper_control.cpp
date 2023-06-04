@@ -60,6 +60,10 @@ void run_steppers(float speed) {
         return; 
     }
 
+    if (speed < 0) {
+        speed = abs(speed);
+    }
+
     float start_speed = 1;
 
     speed = master_stepper->cvt_to_steps(speed);
@@ -429,7 +433,7 @@ void StepperControl::store_position(uint8_t index) {
     }
 
     // float stored_pos[num_steppers];
-    char buffer[7 * num_steppers + num_steppers];
+    char buffer[7 * num_steppers + num_steppers] = "\0";
 
     for (uint8_t n = 0; n < num_steppers; n ++) {
         steppers[n]->store_position(index);
@@ -441,7 +445,7 @@ void StepperControl::store_position(uint8_t index) {
 }
 
 
-void StepperControl::recall_position(uint8_t index) {
+void StepperControl::recall_position(uint8_t index, float speed) {
     if (index >= MAX_STORED_POSITIONS) {
         SerialComm::post_message(ERROR, "Cannot store position; index %i out of bounds", index);
         return;
@@ -459,6 +463,7 @@ void StepperControl::recall_position(uint8_t index) {
         stepper++;
     }
 
+    start_move(speed);
 }
 
 

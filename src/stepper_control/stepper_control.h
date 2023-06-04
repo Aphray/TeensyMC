@@ -119,6 +119,6 @@ namespace TeensyMC { namespace StepperControl {
     void store_position(uint8_t index);
 
     // recall position at index
-    void recall_position(uint8_t index);
+    void recall_position(uint8_t index, float speed);
 
 }} // namespace TeensyMC::StepperControl
