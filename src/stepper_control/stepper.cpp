@@ -227,10 +227,15 @@ namespace TeensyMC {
     }
 
     void Stepper::prepare_probing(int8_t dir_) {
+        if (!probing_enabled) return;
         GUARD_ACTIVE;
         homing_probing = true;
         set_direction(dir_);
         set_target_rel_steps((total_travel + cvt_to_steps(PROBING_OVERSHOOT)) * dir);
+    }
+
+    void Stepper::enable_probing(bool enable) {
+        probing_enabled = enable;
     }
 
     void Stepper::prepare_jogging(float unit_vector) {

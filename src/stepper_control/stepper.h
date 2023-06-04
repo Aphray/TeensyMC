@@ -113,6 +113,9 @@ namespace TeensyMC {
             // check if probing is complete (1 -> complete, 0 -> incomplete, -1 -> error)
             inline int8_t probing_status();
 
+            // set if the axis has probing capabilities
+            void enable_probing(bool enable);
+
             // puts the stepper in jogging mode
             void prepare_jogging(float unit_vector);
 
@@ -176,11 +179,11 @@ namespace TeensyMC {
             int32_t max_travel;
             uint32_t total_travel;
 
+            bool jogging;
             bool home_found;
             bool invert_home;
             bool homing_enabled;
-
-            bool jogging;
+            bool probing_enabled;
             bool homing_probing;
 
             uint32_t delta;
