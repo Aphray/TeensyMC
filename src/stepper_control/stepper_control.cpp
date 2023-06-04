@@ -149,7 +149,7 @@ void StepperControl::internal::begin() {
     SerialComm::register_command("HOLD", 1);
     SerialComm::register_command("HOLDC", 0, false);
     SerialComm::register_command("STORE", 1);
-    SerialComm::register_command("RECALL", 1);
+    SerialComm::register_command("RECALL", 2);
 
     // attach callbacks
     SerialComm::add_callback("ENABL", &ENABL__cb);
