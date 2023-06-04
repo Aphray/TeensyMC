@@ -436,6 +436,7 @@ void StepperControl::store_position(uint8_t index) {
         sprintf(buffer + strlen(buffer), "%f%s", steppers[n]->get_position(), (n < (num_steppers - 1) ? "," : ""));
     }
 
+    stored_positions[index] = true;
     SerialComm::post_message(INFO, "Position [%s] stored at index %i", buffer, index);
 }
 
