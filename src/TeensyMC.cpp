@@ -67,7 +67,7 @@ void TeensyMC::reset() {
     init_complete = false;
     SerialComm::clear_command_queue();
     StepperControl::reset();
-    SerialComm::post_message(CRITICAL, "TeensyMC has been reset; run <INIT> to initialize")
+    SerialComm::post_message(CRITICAL, "TeensyMC has been reset; run <INIT> to initialize");
 }
 
 void TeensyMC::run() {
