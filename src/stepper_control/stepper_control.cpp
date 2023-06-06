@@ -269,6 +269,15 @@ bool StepperControl::check_state(StepperState state_) {
     return state_ == state;
 }
 
+void StepperControl::reset() {
+    Stepper** stepper = steppers;
+    while (*stepper) {
+        (*stepper)->reset();
+        if (!(*stepper)->homed()) change_state(HOME_FIRST); 
+        stepper++;
+    }
+}
+
 void StepperControl::add_stepper(Stepper& stepper) {
 
     if (++num_steppers > MAX_STEPPERS) {

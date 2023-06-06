@@ -21,6 +21,9 @@ namespace TeensyMC {
     // check if initialization was complete
     bool initialized();
 
+    // reset
+    void reset();
+
     // run the TeensyMC loop
     void run();
 }

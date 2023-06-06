@@ -12,7 +12,6 @@ namespace TeensyMC {
     Stepper::Stepper(uint8_t dir_pin_, uint8_t step_pin_, uint8_t en_pin_): dir_pin(dir_pin_), step_pin(step_pin_), en_pin(en_pin_) {
 
         invert_home = false;
-
         homing_probing = false;
 
         axis = count++;
@@ -33,6 +32,14 @@ namespace TeensyMC {
         pinMode(dir_pin, OUTPUT);
         pinMode(step_pin, OUTPUT);
         pinMode(en_pin, OUTPUT);
+    }
+
+    void Stepper::reset() {
+        delta = 0;
+        delta_rem = -1;
+        position = 0;
+        target_position = 0;
+        reset_home();
     }
 
     void Stepper::enable(bool state) {

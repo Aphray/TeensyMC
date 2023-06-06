@@ -46,6 +46,9 @@ namespace TeensyMC { namespace StepperControl {
         return false;
     }
 
+    // reset
+    void reset();
+
     // add a stepper
     void add_stepper(Stepper& stepper);
 

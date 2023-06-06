@@ -14,6 +14,9 @@ namespace TeensyMC {
 
             void begin();
 
+            // reset
+            void reset();
+
             // for setting enable pin
             void enable(bool state);
 
