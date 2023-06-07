@@ -64,17 +64,23 @@ void run_steppers(float speed) {
         speed = abs(speed);
     }
 
-    float start_speed = 1;
-
     speed = master_stepper->cvt_to_steps(speed);
-    float accel = (speed - start_speed) * 1000.0 / ACCELERATION_TIME;
-    // accel = master_stepper->cvt_to_steps(accel);
+    float start_speed = 0;
 
     Stepper** stepper = steppers;
     while (*stepper) {
-        (*stepper)->constrain_speed_accel(master_stepper, &start_speed, &speed, &accel);
-        stepper++;
+        float norm = (*stepper)->get_delta_steps() / master_stepper->get_delta_steps();
+
+        speed = min(speed, (*stepper)->get_max_speed() / norm);
+        start_speed = max(start_speed, (*stepper)->get_min_speed() / norm);
     }
+
+    
+    // speed = min(speed, max_speed);
+
+    // float start_speed = min_speed;
+
+    float accel = (speed - start_speed) * 1000.0 / ACCELERATION_TIME;
 
     prepare_accelerator((state == JOGGING ? std::numeric_limits<uint32_t>::max() : master_stepper->get_delta_steps()), start_speed, speed, accel);
     step_timer.setPeriod(1);

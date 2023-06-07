@@ -48,7 +48,7 @@ namespace TeensyMC {
             void set_max_accel(float max_accel);
 
             // set the maximum and minumum speed (in units/sec)
-            void set_speed_limits(float min_speed, float max_speed);
+            void set_min_max_speed(float min_speed, float max_speed);
 
             // set the minimum travel distance (in units)
             void set_min_travel(float min_travel);
@@ -82,6 +82,12 @@ namespace TeensyMC {
 
             // returns the (mapped) speed (in units/sec)
             float get_speed();
+
+            // returns the maximum specified speed (units/sec)
+            float get_max_speed();
+
+            // returns the minimum specified speed (units/sec)
+            float get_min_speed();
 
             // returns the number of steps traveled from the starting position
             uint32_t get_steps_traveled();
