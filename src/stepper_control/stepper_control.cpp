@@ -73,6 +73,8 @@ void run_steppers(float speed) {
 
         speed = min(speed, (*stepper)->get_max_speed() / norm);
         start_speed = max(start_speed, (*stepper)->get_min_speed() / norm);
+        
+        stepper++;
     }
 
     
