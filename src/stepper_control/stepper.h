@@ -89,6 +89,9 @@ namespace TeensyMC {
             // returns the minimum specified speed (units/sec)
             float get_min_speed();
 
+            // returns the maximum specified acceleration (units/sec)
+            float get_max_accel();
+
             // returns the number of steps traveled from the starting position
             uint32_t get_steps_traveled();
 
