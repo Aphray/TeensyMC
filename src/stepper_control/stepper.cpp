@@ -22,10 +22,12 @@ namespace TeensyMC {
         target_position = 0;
 
         set_units_per_step(1.0f);
+        set_steps_per_rev(200);
         set_enable_level(LOW);
         enable_homing(true);
         invert_dir_polarity(false);
         invert_step_polarity(false);
+        
     }
 
     void Stepper::begin() {
@@ -84,6 +86,11 @@ namespace TeensyMC {
     void Stepper::set_units_per_step(float units_per_step_) {
         GUARD_ACTIVE;
         units_per_step = units_per_step_;
+    }
+
+    void Stepper::set_steps_per_rev(uint32_t steps_per_rev_) {
+        GUARD_ACTIVE;
+        steps_per_rev = steps_per_rev_;
     }
 
     float Stepper::cvt_to_units(int32_t steps) {
@@ -251,7 +258,7 @@ namespace TeensyMC {
         if (unit_vector == 0) {
             return;
         } else {
-            set_target_rel_steps(unit_vector * 1000);
+            set_target_rel_steps(unit_vector * steps_per_rev);
             jogging = true;
         }
     }
@@ -259,7 +266,7 @@ namespace TeensyMC {
     float Stepper::get_speed() {
         Stepper* master = StepperControl::get_master_stepper();
         
-        return (master == nullptr || master->delta == 0) ? 0 : cvt_to_units(StepperControl::get_accelerator_speed() * delta / master->delta);
+        return (master == nullptr || master->delta == 0) ? 0 : cvt_to_units(StepperControl::get_accelerator_speed() * get_delta_revs() / master->get_delta_revs());
     }
 
     uint32_t Stepper::get_steps_traveled() {
@@ -270,8 +277,12 @@ namespace TeensyMC {
         return delta;
     }
 
+    float Stepper::get_delta_revs() {
+        return float(delta) / steps_per_rev;
+    }
+
     void Stepper::constrain_speed_accel(Stepper* master, float* start_speed, float* speed, float* accel) {
-        float norm = delta / master->delta;
+        float norm = get_delta_revs() / master->get_delta_revs();
 
         // skip if the stepper isn't planned to move (i.e., delta = 0)
         if (norm == 0) { return; }

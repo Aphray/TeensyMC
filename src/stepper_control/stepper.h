@@ -35,6 +35,9 @@ namespace TeensyMC {
             // set the conversion from steps -> units (i.e., mm, inches, etc.)
             void set_units_per_step(float units_per_step);
 
+            // sets the number of steps for a full revolution (using for running steppers with different number of steps per rev; i.e., different microstep factors)
+            void set_steps_per_rev(uint32_t steps_per_rev);
+
             // convert steps to units
             float cvt_to_units(int32_t steps);
 
@@ -85,6 +88,9 @@ namespace TeensyMC {
 
             // returns the steps b/w the starting position and end position
             uint32_t get_delta_steps();
+
+            // get delta in revolutions (normalized among all steppers)
+            float get_delta_revs();
 
             // attach a callback to be executed during homing (i.e., to read a switch/sensor)
             void set_homing_callback(int8_t (*callback)());
@@ -198,6 +204,7 @@ namespace TeensyMC {
             float max_overshoot;
 
             float units_per_step;
+            uint32_t steps_per_rev;
 
             static uint8_t count;
 
