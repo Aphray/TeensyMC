@@ -106,7 +106,11 @@ namespace TeensyMC {
         max_accel = cvt_to_steps(max_accel_);
     }
 
-    void Stepper::set_speed_limits(float min_speed_, float max_speed_) {
+    float Stepper::get_max_accel() {
+        return max_accel;
+    }
+
+    void Stepper::set_min_max_speed(float min_speed_, float max_speed_) {
         GUARD_ACTIVE;
         min_speed = cvt_to_steps(min_speed_);
         max_speed = cvt_to_steps(max_speed_);
@@ -266,7 +270,15 @@ namespace TeensyMC {
     float Stepper::get_speed() {
         Stepper* master = StepperControl::get_master_stepper();
         
-        return (master == nullptr || master->delta == 0) ? 0 : cvt_to_units(StepperControl::get_accelerator_speed() * get_delta_revs() / master->get_delta_revs());
+        return (master == nullptr || master->delta == 0) ? 0 : cvt_to_units(StepperControl::get_accelerator_speed() * delta / master->delta);
+    }
+
+    float Stepper::get_max_speed() {
+        return max_speed;
+    }
+
+    float Stepper::get_min_speed() {
+        return min_speed;
     }
 
     uint32_t Stepper::get_steps_traveled() {

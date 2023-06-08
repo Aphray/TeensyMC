@@ -66,20 +66,26 @@ void run_steppers(float speed) {
         speed = abs(speed);
     }
 
-    float start_speed = 1;
-
-    speed = master_stepper->cvt_to_steps(speed);
-    float accel = (speed - start_speed) * 1000.0 / ACCELERATION_TIME;
-    // accel = master_stepper->cvt_to_steps(accel);
+    float min_speed = 1e6;
+    float max_speed = 1e6;
+    float max_accel = 1e6;
 
     Stepper** stepper = steppers;
     while (*stepper) {
-        (*stepper)->constrain_speed_accel(master_stepper, &start_speed, &speed, &accel);
+        if ((*stepper)->get_delta_steps() > 0) {
+            float norm = (*stepper)->get_delta_steps() / master_stepper->get_delta_steps();
+
+            max_speed = min(max_speed, (*stepper)->get_max_speed() / norm);
+            min_speed = min(min_speed, (*stepper)->get_min_speed() / norm);
+            max_accel = min(max_accel, (*stepper)->get_max_accel());
+        }
+        
         stepper++;
     }
 
-    prepare_accelerator((state == JOGGING ? std::numeric_limits<uint32_t>::max() : master_stepper->get_delta_steps()), start_speed, speed, accel);
-    step_timer.setPeriod(1);
+    speed = min(max_speed, master_stepper->cvt_to_steps(speed));
+    float start_speed = min(min_speed, 0.25 * speed);
+    float accel = min(max_accel, ((speed - start_speed) * 1000.0 / ACCELERATION_TIME));
 
     switch (state) {
         case PROBING:
@@ -100,6 +106,8 @@ void run_steppers(float speed) {
             break;
     }
 
+    prepare_accelerator((state == JOGGING ? std::numeric_limits<uint32_t>::max() : master_stepper->get_delta_steps()), start_speed, speed, accel);
+    step_timer.setPeriod(1);
     step_timer.start();
 }
 
