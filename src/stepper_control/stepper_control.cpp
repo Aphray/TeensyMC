@@ -43,8 +43,10 @@ void hold_ISR();    // hold timer ISR
 
 
 inline void change_state(StepperState state_) {
-    if (state == FAULT) SerialComm::clear_command_queue();
-
+    if (state == state_) return;                                // do nothing if already in state
+    if (state == FAULT) SerialComm::clear_command_queue();      // so commands don't continue to run after clearing fault
+    
+    // store current state (for restoring) and set the new state
     prev_state = state;
     state = state_;
 }
@@ -218,6 +220,10 @@ void StepperControl::internal::post_steppers_status(bool queue = false) {
 
 void StepperControl::internal::process() {
     switch (state) {
+        case IDLE:
+            if (!steppers_homed()) change_state(HOME_FIRST);
+            return;
+
         case HOMING:
             switch (master_stepper->homing_status()) {
                 case 1: // homing complete
