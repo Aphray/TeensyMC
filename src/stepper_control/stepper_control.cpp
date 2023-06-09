@@ -150,7 +150,7 @@ void StepperControl::internal::begin() {
     SerialComm::register_command("PROBE", 3);
     SerialComm::register_command("HOME", 2);
     SerialComm::register_command("FAULT", 0, false);
-    SerialComm::register_command("ZERO", 1);
+    // SerialComm::register_command("ZERO", 1);
     SerialComm::register_command("STOP", 0, false);
     SerialComm::register_command("HALT", 0, false);
     SerialComm::register_command("LIMIT", 3);
@@ -168,7 +168,7 @@ void StepperControl::internal::begin() {
     SerialComm::add_callback("PROBE", &PROBE__cb);
     SerialComm::add_callback("HOME", &HOME__cb);
     SerialComm::add_callback("FAULT", &CFAULT__cb);
-    SerialComm::add_callback("ZERO", &ZERO__cb);
+    // SerialComm::add_callback("ZERO", &ZERO__cb);
     SerialComm::add_callback("STOP", &STOP__cb);
     SerialComm::add_callback("HALT", &HALT__cb);
     SerialComm::add_callback("LIMIT", &LIMIT__cb);
@@ -355,15 +355,15 @@ void StepperControl::stop_jogging() {
     if (state == JOGGING) stop();
 }
 
-void StepperControl::zero_stepper(Stepper* stepper) {
-    ASSERT_IDLE;
-    stepper->set_zero();
-}
+// void StepperControl::zero_stepper(Stepper* stepper) {
+//     ASSERT_IDLE;
+//     stepper->set_zero();
+// }
 
-void StepperControl::zero_stepper(uint8_t axis) {
-    if (axis > num_steppers) return;
-    zero_stepper(steppers[axis]);
-}
+// void StepperControl::zero_stepper(uint8_t axis) {
+//     if (axis > num_steppers) return;
+//     zero_stepper(steppers[axis]);
+// }
 
 void StepperControl::stop() {
     if (steppers_active()) decelerate_now();

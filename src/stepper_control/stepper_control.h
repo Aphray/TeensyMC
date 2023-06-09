@@ -70,8 +70,8 @@ namespace TeensyMC { namespace StepperControl {
     void start_probe(Stepper* stepper, float speed, int8_t dir);
 
     // zero a stepper
-    void zero_stepper(uint8_t axis);
-    void zero_stepper(Stepper* stepper);
+    // void zero_stepper(uint8_t axis);
+    // void zero_stepper(Stepper* stepper);
 
     // controlled stop (with deceleration)
     void stop();

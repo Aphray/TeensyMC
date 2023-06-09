@@ -139,9 +139,13 @@ namespace TeensyMC {
         return (position - position_offset) * units_per_step;
     }
 
-    void Stepper::set_position(float position_) {
+    void Stepper::set_working_position(float position_) {
         GUARD_ACTIVE;
         position_offset = position - cvt_to_steps(position_);
+    }
+
+    void Stepper::reset_working_position() {
+        position_offset = 0;
     }
 
     void Stepper::store_position(uint8_t index) {
@@ -154,7 +158,7 @@ namespace TeensyMC {
 
         StoredPosition* pos = &(stored_positions[index]);
         pos->stored = true;
-        pos->position = get_position();
+        pos->position = position;
     }
 
     void Stepper::recall_position(uint8_t index) {
@@ -172,15 +176,15 @@ namespace TeensyMC {
             return;
         }
 
-        set_target_abs_steps(pos->position);
+        set_target_abs_steps(pos->position + position_offset);
     }
 
-    void Stepper::set_zero() {
-        GUARD_ACTIVE;
+    // void Stepper::set_zero() {
+    //     GUARD_ACTIVE;
         
-        position = position_offset;
-        target_position = position_offset;
-    }
+    //     position = position_offset;
+    //     target_position = position_offset;
+    // }
 
     void Stepper::set_direction(int8_t dir_) {
         GUARD_ACTIVE;

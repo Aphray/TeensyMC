@@ -69,13 +69,16 @@ namespace TeensyMC {
             void set_target_rel(float rel_pos);
 
             // sets the current position to zero
-            void set_zero();
+            // void set_zero();
 
             // returns the current working position (in units)
             float get_position();
 
-            // sets the current position (in units)
-            void set_position(float position);
+            // sets the working-position (in units)
+            void set_working_position(float position);
+
+            // reset working position back to machine position
+            void reset_working_position();
 
             // stores the current position with the index
             void store_position(uint8_t index);
