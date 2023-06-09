@@ -74,12 +74,6 @@ namespace TeensyMC {
             // returns the current working position (in units)
             float get_position();
 
-            // // returns the current working position; machine position - offset (in units)
-            // float get_wposition();
-
-            // set a working coordinate offset (in units);
-            void set_offset(float offset);
-
             // sets the current position (in units)
             void set_position(float position);
 

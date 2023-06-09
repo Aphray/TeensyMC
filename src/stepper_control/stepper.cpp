@@ -139,14 +139,9 @@ namespace TeensyMC {
         return (position - position_offset) * units_per_step;
     }
 
-    void Stepper::set_offset(float offset) {
-        GUARD_ACTIVE;
-        position_offset = cvt_to_steps(offset);
-    }
-
     void Stepper::set_position(float position_) {
         GUARD_ACTIVE;
-        set_offset(position - cvt_to_steps(position_));
+        position_offset = position - cvt_to_steps(position_);
     }
 
     void Stepper::store_position(uint8_t index) {
