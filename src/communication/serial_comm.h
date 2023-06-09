@@ -97,7 +97,7 @@ namespace TeensyMC { namespace SerialComm {
     // add a user-defined command and callback that can be executed via serial commands
     void register_command(char* cmd_name, uint8_t args, uint8_t* variable_args);
     // add a user-defined command and callback that can be executed via serial commands
-    void register_command(char* cmd_name, uint8_t args, bool queue, uint8_t* variable_args);
+    void register_command(char* cmd_name, uint8_t args, uint8_t* variable_args, bool queue);
 
     // attach callback to the specified command
     void add_callback(char* cmd_name, CommandCallback callback);
