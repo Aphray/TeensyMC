@@ -50,3 +50,6 @@ CALLBACK(STORE);
 
 // recall position command
 CALLBACK(RECALL);
+
+// set position command
+CALLBACK(SETPOS);

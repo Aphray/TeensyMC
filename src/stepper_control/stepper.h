@@ -71,8 +71,17 @@ namespace TeensyMC {
             // sets the current position to zero
             void set_zero();
 
-            // returns the current position (in units)
+            // returns the current working position (in units)
             float get_position();
+
+            // // returns the current working position; machine position - offset (in units)
+            // float get_wposition();
+
+            // set a working coordinate offset (in units);
+            void set_offset(float offset);
+
+            // sets the current position (in units)
+            void set_position(float position);
 
             // stores the current position with the index
             void store_position(uint8_t index);
@@ -190,6 +199,7 @@ namespace TeensyMC {
             uint32_t steps_traveled;
             int32_t target_position;
             volatile int32_t position;
+            int32_t position_offset;
 
             StoredPosition stored_positions[MAX_STORED_POSITIONS];
 

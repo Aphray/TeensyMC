@@ -20,6 +20,7 @@ namespace TeensyMC {
         delta_rem = -1;
         position = 0;
         target_position = 0;
+        position_offset = 0;
 
         set_units_per_step(1.0f);
         set_steps_per_rev(200);
@@ -27,7 +28,6 @@ namespace TeensyMC {
         enable_homing(true);
         invert_dir_polarity(false);
         invert_step_polarity(false);
-        
     }
 
     void Stepper::begin() {
@@ -41,6 +41,7 @@ namespace TeensyMC {
         delta_rem = -1;
         position = 0;
         target_position = 0;
+        position_offset = 0;
         reset_home();
     }
 
@@ -135,40 +136,55 @@ namespace TeensyMC {
     }
 
     float Stepper::get_position() {
-        return position * units_per_step;
+        return (position - position_offset) * units_per_step;
+    }
+
+    void Stepper::set_offset(float offset) {
+        GUARD_ACTIVE;
+        position_offset = cvt_to_steps(offset);
+    }
+
+    void Stepper::set_position(float position_) {
+        GUARD_ACTIVE;
+        set_offset(position - cvt_to_steps(position_));
     }
 
     void Stepper::store_position(uint8_t index) {
+        GUARD_ACTIVE;
+
         if (index >= MAX_STORED_POSITIONS) {
             SerialComm::post_message(ERROR, "Cannot store position; index %i out of bounds", index);
             return;
         }
 
-        StoredPosition* item = &(stored_positions[index]);
-        item->stored = true;
-        item->position = position;
+        StoredPosition* pos = &(stored_positions[index]);
+        pos->stored = true;
+        pos->position = get_position();
     }
 
     void Stepper::recall_position(uint8_t index) {
+        GUARD_ACTIVE;
+
         if (index >= MAX_STORED_POSITIONS) {
             SerialComm::post_message(ERROR, "Cannot recall position; index %i out of bounds", index);
             return;
         }
 
-        StoredPosition item = stored_positions[index];
+        StoredPosition* pos = &(stored_positions[index]);
 
-        if (!item.stored) {
-            SerialComm::post_message(ERROR, "Cannot recall position; no position stored at index %i");
+        if (!pos->stored) {
+            SerialComm::post_message(ERROR, "Cannot recall position; no position stored at index %i", index);
             return;
         }
 
-        set_target_abs_steps(item.position);
+        set_target_abs_steps(pos->position);
     }
 
     void Stepper::set_zero() {
         GUARD_ACTIVE;
-        position = 0;
-        target_position = 0;
+        
+        position = position_offset;
+        target_position = position_offset;
     }
 
     void Stepper::set_direction(int8_t dir_) {
@@ -178,7 +194,7 @@ namespace TeensyMC {
     }
 
     void Stepper::set_target_abs_steps(int32_t abs_pos) {
-        set_target_rel_steps(abs_pos - position);
+        set_target_rel_steps(abs_pos + position_offset - position);
     }
 
     void Stepper::set_target_rel_steps(int32_t rel_pos) {

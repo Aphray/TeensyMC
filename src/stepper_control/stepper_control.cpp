@@ -154,12 +154,13 @@ void StepperControl::internal::begin() {
     SerialComm::register_command("STOP", 0, false);
     SerialComm::register_command("HALT", 0, false);
     SerialComm::register_command("LIMIT", 3);
-    SerialComm::register_command("JOG", 1, false, &num_steppers);
+    SerialComm::register_command("JOG", 1, &num_steppers, false);
     SerialComm::register_command("JOGC", 0, false);
     SerialComm::register_command("HOLD", 1);
     SerialComm::register_command("HOLDC", 0, false);
     SerialComm::register_command("STORE", 1);
     SerialComm::register_command("RECALL", 2);
+    SerialComm::register_command("SETPOS", 0, &num_steppers);
 
     // attach callbacks
     SerialComm::add_callback("ENABL", &ENABL__cb);
@@ -177,6 +178,7 @@ void StepperControl::internal::begin() {
     SerialComm::add_callback("HOLDC", &HOLDC__cb);
     SerialComm::add_callback("STORE", &STORE__cb);
     SerialComm::add_callback("RECALL", &RECALL__cb);
+    SerialComm::add_callback("SETPOS", &SETPOS__cb);
 }
 
 void StepperControl::internal::sort_steppers() {

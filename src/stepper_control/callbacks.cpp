@@ -145,14 +145,6 @@ CALLBACK(MOVE) {
         return;
     }
 
-    // char* accel_c = args->next();
-    // float accel_f = 0;
-
-    // if (!argtof(accel_c, &accel_f)) {
-    //     ARG_ERROR(accel_c);
-    //     return;
-    // }
-
     StepperControl::start_move(speed_f);
 }
 
@@ -165,7 +157,6 @@ CALLBACK(PROBE) {
     char* ax_c = args->next();
     char* dir_c = args->next();
     char* speed_c = args->next();
-    // char* accel_c = args->next();
 
     int ax_i = 0;
     if (!argtoi(ax_c, &ax_i)) {
@@ -184,12 +175,6 @@ CALLBACK(PROBE) {
         ARG_ERROR(speed_c);
         return;
     }
-
-    // float accel_f = 0;
-    // if (!argtof(accel_c, &accel_f)) {
-    //     ARG_ERROR(accel_c);
-    //     return;
-    // }
 
     StepperControl::start_probe(ax_i, speed_f, dir_i);
 }
@@ -214,12 +199,6 @@ CALLBACK(HOME) {
         ARG_ERROR(speed_c);
         return;
     }
-
-    // float accel_f = 0;
-    // if (!argtof(accel_c, &accel_f)) {
-    //     ARG_ERROR(accel_c);
-    //     return;
-    // }
 
     StepperControl::start_home(ax_i, speed_f);
 }
@@ -359,14 +338,6 @@ CALLBACK(JOG) {
         return;
     }
 
-    // char* accel_c = args->next();
-    // float accel_f = 0;
-
-    // if (!argtof(accel_c, &accel_f)) {
-    //     ARG_ERROR(accel_c);
-    //     return;
-    // }
-
     StepperControl::start_jogging(unit_vectors, speed_f);
 }
 
@@ -433,4 +404,33 @@ CALLBACK(RECALL) {
     }
 
     StepperControl::recall_position(idx_i, speed_f);
+}
+
+CALLBACK(SETPOS) {
+    // set position command
+
+    ASSERT_HOMED;
+    ASSERT_INACTIVE;
+
+    for (uint8_t n = 0; n < StepperControl::get_num_steppers(); n ++) {
+
+        Stepper* stepper = StepperControl::get_stepper(n);
+
+        char* pos_c = args->next();
+        float pos_f = 0;
+
+        switch (*pos_c) {
+            case ARG_SKIP_CHAR:
+                break;
+            
+            default:
+                if (!argtof(pos_c + 1, &pos_f)) {
+                    ARG_ERROR(pos_c + 1);
+                    return;
+                }
+
+                stepper->set_position(pos_f);
+                break;
+        }
+    }
 }
