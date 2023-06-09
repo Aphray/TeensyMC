@@ -424,8 +424,8 @@ CALLBACK(SETPOS) {
                 break;
             
             default:
-                if (!argtof(pos_c + 1, &pos_f)) {
-                    ARG_ERROR(pos_c + 1);
+                if (!argtof(pos_c, &pos_f)) {
+                    ARG_ERROR(pos_c);
                     return;
                 }
 
