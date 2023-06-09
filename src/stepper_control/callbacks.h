@@ -22,7 +22,7 @@ CALLBACK(HOME);
 CALLBACK(CFAULT);
 
 // set zero command
-CALLBACK(ZERO);
+// CALLBACK(ZERO);
 
 // controlled stop command
 CALLBACK(STOP);

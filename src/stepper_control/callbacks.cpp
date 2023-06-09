@@ -211,21 +211,21 @@ CALLBACK(CFAULT) {
     StepperControl::clear_fault();
 }
 
-CALLBACK(ZERO) {
-    // set zero command
+// CALLBACK(ZERO) {
+//     // set zero command
 
-    ASSERT_INACTIVE;
+//     ASSERT_INACTIVE;
 
-    char* ax_c = args->next();
+//     char* ax_c = args->next();
 
-    int ax_i = 0;
-    if (!argtoi(ax_c, &ax_i) || ax_i < 0 || ax_i >= StepperControl::get_num_steppers()) {
-        ARG_ERROR(ax_c);
-        return;
-    }
+//     int ax_i = 0;
+//     if (!argtoi(ax_c, &ax_i) || ax_i < 0 || ax_i >= StepperControl::get_num_steppers()) {
+//         ARG_ERROR(ax_c);
+//         return;
+//     }
 
-    StepperControl::zero_stepper(ax_i);
-}
+//     StepperControl::zero_stepper(ax_i);
+// }
 
 CALLBACK(STOP) {
     // stop (controlled w/ deceleration) command
@@ -422,6 +422,10 @@ CALLBACK(SETPOS) {
         switch (*pos_c) {
             case ARG_SKIP_CHAR:
                 break;
+
+            case 'R':
+                stepper->reset_working_position();
+                break;
             
             default:
                 if (!argtof(pos_c, &pos_f)) {
@@ -429,7 +433,7 @@ CALLBACK(SETPOS) {
                     return;
                 }
 
-                stepper->set_position(pos_f);
+                stepper->set_working_position(pos_f);
                 break;
         }
     }
