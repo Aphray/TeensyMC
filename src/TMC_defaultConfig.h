@@ -1,3 +1,3 @@
 #pragma once
 
-#define TEST 2
+const uint8_t MAX_STEPPERS = 5;
