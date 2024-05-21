@@ -14,6 +14,8 @@ public:
 
     bool isAccelerating();
 
+    friend class StepperControl;
+
 protected:
     float startSpeed;
     float targetSpeed;

@@ -14,6 +14,8 @@ class StepperControl: public StepperControlBase {
 
     private:
 
+        AcceleratorBase& accelerator;
+
         void sortSteppers();
 
 };
