@@ -11,3 +11,4 @@ void LinearRampAccelerator::precompute() {
 float LinearRampAccelerator::computeSpeed(uint32_t steps) {
     // return interpf(0, startSpeed, accelStop, targetSpeed, steps);
     return startSpeed + steps * interpMult;
+}
